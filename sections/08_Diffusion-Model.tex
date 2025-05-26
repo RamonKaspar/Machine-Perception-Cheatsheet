@@ -1,0 +1,89 @@
+\section{Diffusion Models}
+
+\textbf{Advantages:} High quality generations, better diversity, more stable training than GANs. \textbf{Two-step:}
+\begin{itemize}
+    \item \textbf{Forward (diffusion):} Add noise to $\mathbf{x}_t$ (not learned)
+    \item \textbf{Reverse (denoising):} Remove noise (learned $p_\theta$)
+\end{itemize}
+Modeled as Markov stochastic process, where $x_0 \sim p(x_0)$ and $x_T \sim \Gauss{0,I}$
+
+\subsection{Forward Diffusion Process}
+
+\textbf{Noise schedule:} $\{\beta_t\}_{t=1}^T$ (mon. increasing)
+
+\textbf{Single step:} $q(\mathbf{x}_t | \mathbf{x}_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_{t-1}, \beta_t \mathbf{I})$
+
+\textbf{Closed-form sol.:} $\alpha_t = 1 - \beta_t$, $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$
+
+\highlight{$q(\mathbf{x}_t | \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1-\bar{\alpha}_t)\mathbf{I})$}
+
+\highlight{$\mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}$ $\quad\quad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$}
+
+\subsection{Reverse Process \& Training}
+
+\textbf{Problem:} $q(\mathbf{x}_{t-1} | \mathbf{x}_t)$ intract. ({\footnotesize req. $\int q(\mathbf{x}_t | \mathbf{x}_0) q(\mathbf{x}_0) d\mathbf{x}_0$)}
+
+\textbf{Key insight:} Cond. on $\mathbf{x}_0$ makes distr. tract:
+\highlight{$q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_{t-1} | \mu_q(\mathbf{x}_t, \mathbf{x}_0), \sigma_q^2(t)\mathbf{I})$} (both mean and variance known!)
+
+\textbf{Solution:} Learn $p_\theta(\mathbf{x}_{t-1} | \mathbf{x}_t) \approx q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$
+
+\textbf{Parametr.:} \highlight{$p_\theta(\mathbf{x}_{t-1} | \mathbf{x}_t) = \mathcal{N}(\boldsymbol{\mu}_\theta(\mathbf{x}_t, t), \sigma_t^2 \mathbf{I})$}
+
+\textbf{ELBO Objective:}
+{\small
+$\log p(\mathbf{x}_0) \geq \E[q(\mathbf{x}_1|\mathbf{x}_0)]{\log p_\theta(\mathbf{x}_0|\mathbf{x}_1)} - \KL(q(\mathbf{x}_T|\mathbf{x}_0) \parallel p(\mathbf{x}_T)) - \sum_{t=2}^T \E[q(\mathbf{x}_t|\mathbf{x}_0)]{\KL(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0) \parallel p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t))}$}
+
+\textbf{Noise pred.:} NN to predict noise $\boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)$:
+
+$\boldsymbol{\mu}_q(\mathbf{x}_t, \mathbf{x}_0) = \frac{1}{\sqrt{\alpha_t}} \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}} \boldsymbol{\epsilon}$
+
+$\boldsymbol{\mu}_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\alpha_t}} \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)$
+
+$\Rightarrow$ \textbf{Goal:} Optimize $\boldsymbol{\mu}_\theta(\mathbf{x}_t, t)$ to match $\boldsymbol{\mu}_q(\mathbf{x}_t, \mathbf{x}_0)$
+
+\textbf{Loss:} 
+\highlight{$\mathcal{L} = \|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}, t)\|^2$}
+
+\begin{highlightbox*}[gray!30]
+\emph{Training:}\\
+1. $\mathbf{x}_0 \sim q(x_0)$, $t \sim \text{Uniform}(1,\ldots,T)$, $\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0},\mathbf{I})$\\
+2. Compute $\mathbf{x}_t = \sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}$\\
+3. Update $\theta$: $\nabla_\theta \|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\|^2$
+\end{highlightbox*}
+
+\begin{highlightbox*}[gray!30]
+\emph{Sampling:}\\
+1. Sample $\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$\\
+2. \textbf{For} $t = T,...,1$:\\
+\quad $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ if $t > 1$, else $\mathbf{z} = \mathbf{0}$\\
+\quad $\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\right) + \sigma_t \mathbf{z}$
+\end{highlightbox*}
+
+Where $\sigma_t^2 = \beta_t$ in practice, and $t$ can be continuous.
+
+\emph{Classifier-free Guidance:} Add conditional variable $c$ to model. Mix conditional and unconditional predictions for better quality:
+\highlight{$\boldsymbol{\epsilon}^*(\mathbf{x}, c; t) = (1+\rho)\boldsymbol{\epsilon}_\theta(\mathbf{x}, c; t) - \rho \boldsymbol{\epsilon}_\theta(\mathbf{x}; t)$}
+
+Where $\rho \uparrow$: more guidance (better quality, less divers)
+
+\emph{ControlNet:} Zero-convolution approach to add control without destroying pretrained model: $y_c = \mathcal{F}(x) + Z_2(\mathcal{F}'(x + Z_1(c)))$ (Where $\mathcal{F}$: Original network (locked), $\mathcal{F}'$: Trainable copy, $Z_1, Z_2$: Zero conv. layers init. to $0$, so initially $y_c = \mathcal{F}(x)$)
+
+\subsection{Latent Diffusion Models}
+
+\textbf{Motivation:} High-res. images expensive to model $\Rightarrow$ \textbf{Idea:} perform diff./denoising in latent space
+
+\textbf{Approach:} 
+1. Train VAE: $\mathbf{x} \xrightarrow{\text{encode}} \mathbf{z} \xrightarrow{\text{decode}} \hat{\mathbf{x}}$
+2. Perform diffusion in latent space $\mathbf{z}$ (lower dimensional)
+3. Decoder reconstructs final image
+
+\textbf{Benefits:} Efficiency + diffusion focuses on \flqq semantic\frqq generation while VAE handles pixel-level details
+
+\subsection{Key Properties}
+
+VAEs are essentially 1-step diffusion models
+
+\textbf{Advantages:} Stable training, high quality, good diversity, scalable
+
+\textbf{Disadvantages:} Slow sampling (requires $T$ denoising steps), computationally expensive
