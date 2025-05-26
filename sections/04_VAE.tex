@@ -1,0 +1,85 @@
+\section{Autoencoders \& Variational Autoencoders}
+
+% \begin{itemize}
+%     \item \textbf{Supervised Learning:} $f$ maps data $\mathbf{x} \to$ label $\mathbf{y}$
+%     \item \textbf{Unsupervised Learning:} Learn data's hidden structure (clustering, feature learning, dimensionality reduction, density estimation)
+%     \item \textbf{Generative:} Learn $p_{\text{model}}(\mathbf{x}) \approx p_{\text{data}}(\mathbf{x})$, then sample from $p_{\text{model}}$
+% \end{itemize}
+
+\emph{Standard Autoencoder:} Encoder $f: \mathbf{x} \in \R^n \to \mathbf{z} \in \R^d$ (where $d \ll n$), Decoder $g: \mathbf{z} \to \hat{\mathbf{x}}$
+
+\textbf{Loss:} $\mathcal{L} = \text{Diff}(\mathbf{x}_{\text{in}}, \mathbf{x}_{\text{recon}})$ (e.g., MSE, cross-entropy)
+
+\highlight{Equivalent to PCA with closed-form solution}
+
+\textbf{Applications:} (1) Denoising AE: corrupt input, recover clean version, (2) Inpainting AE: mask parts of image then recover, (3) 3D human motion: add noise to skeleton, recover with AE
+
+\textbf{Limitation:} Good reconstruction, poor generation. Latent space not well-structured: no continuity, no interpolation, sparse regions.
+
+\subsection{Variational Autoencoder (VAE)}
+
+$\mathbf{x} \xrightarrow{\text{enc}} \boldsymbol{\mu}_{\mathbf{z}|\mathbf{x}}, \boldsymbol{\sigma}_{\mathbf{z}|\mathbf{x}} \xrightarrow{\text{sample}} \mathbf{z} \xrightarrow{\text{dec}} \boldsymbol{\mu}_{\mathbf{x}|\mathbf{z}}, \boldsymbol{\sigma}_{\mathbf{x}|\mathbf{z}} \xrightarrow{\text{sample}} \hat{\mathbf{x}}$
+
+\textbf{Encoder:} $q_\phi(\mathbf{z} | \mathbf{x}) = \mathcal{N}(\boldsymbol{\mu}_{\text{nn}}(\mathbf{x}), \text{diag}(\boldsymbol{\sigma}_{\text{nn}}^2(\mathbf{x})))$\\
+\textbf{Decoder:} $p_\theta(\mathbf{x} | \mathbf{z}) = \mathcal{N}(\boldsymbol{\mu}_{\text{nn}}(\mathbf{z}), \text{diag}(\boldsymbol{\sigma}_{\text{nn}}^2(\mathbf{z})))$\\
+\textbf{Prior:} $p_\theta(\mathbf{z}) = \mathcal{N}(\mathbf{0}, \mathbf{I})$
+
+\begin{highlightbox*}[gray!30]
+\emph{ELBO:}
+$\log p_\theta(\mathbf{x}) = \E[q_\phi(\mathbf{z}|\mathbf{x})]{\log p_\theta(\mathbf{x}|\mathbf{z})} - \KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z})) + \KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z}|\mathbf{x}))$
+\end{highlightbox*}
+
+$\KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z}|\mathbf{x})) \geq 0$ (intractable), we get:
+
+\begin{highlightbox*}[gray!30]
+$\log p_\theta(\mathbf{x}) \geq \text{ELBO}_{\theta,\phi}(\mathbf{x}) = \E[q_\phi(\mathbf{z}|\mathbf{x})]{\log p_\theta(\mathbf{x}|\mathbf{z})} - \KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z}))$
+\end{highlightbox*}
+
+\begin{itemize}
+    \item $\E[q_\phi]{\log p_\theta(\mathbf{x}|\mathbf{z})}$: \textbf{Reconstruction loss} (encourages clustering of similar samples in latent space)
+    \item $-\KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z}))$: \textbf{Latent regularization} (makes posterior close to prior, ensures continuity and interpolation)
+\end{itemize}
+
+\textbf{Objective:} \highlight{$\theta^*,\phi^* = \argmax_{\theta,\phi} \sum_i \text{ELBO}(\mathbf{x}_i,\theta,\phi)$}
+
+\textbf{Reparametrization Trick:} To backpropagate through sampling:
+$\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\sigma}^2) \Leftrightarrow \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}), \mathbf{z} = \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon}$
+
+\textbf{Generation:} Sample $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$, decode to get $\hat{\mathbf{x}}$\\
+\textbf{Inference:} Use $\boldsymbol{\mu}$ directly (no sampling)
+
+\subsection{Disentangled Representations}
+
+\textbf{Goal:} Each latent dimension should control a single factor of variation
+
+\textbf{Semi-supervised:} $p(\mathbf{x}|\mathbf{y}, \mathbf{z})$ where $\mathbf{y}$ are known factors, $\mathbf{z}$ are style factors
+
+\emph{$\beta$-VAE (Unsupervised):} Assume $p(\mathbf{x}|\mathbf{z}) \approx p(\mathbf{x}|\mathbf{v}, \mathbf{w})$ where $\mathbf{v}$ are conditionally independent, $\mathbf{w}$ are conditionally dependent
+
+\textbf{Constrained Opt.:} $\max_{\phi,\theta} \E[\mathbf{x},q_\phi]{\log p_\theta(\mathbf{x}|\mathbf{z})}$ subject to $\KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z})) < \delta$
+
+\textbf{Lagrangian Solution:} $\mathcal{L}_{\beta,\phi,\theta} = \E[q_\phi]{\log p_\theta(\mathbf{x}|\mathbf{z})} - \beta (\KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z})) - \delta)$
+
+Where $\beta > 1$ enforces stronger constraint on latent space than standard VAE
+
+% \subsection{Hierarchical Latent Variable Models}
+
+% \textbf{Encoder:} $q_\phi(\mathbf{z}_{1:L}|\mathbf{x}) = \prod_{i=1}^L q_\phi(\mathbf{z}_i|\mathbf{x})$\\
+% \textbf{Decoder:} $p_\theta(\mathbf{x}|\mathbf{z}) = p_\theta(\mathbf{x}|\mathbf{z}_1)$\\
+% \textbf{Prior:} $p_\theta(\mathbf{z}_{1:L}) = p_\theta(\mathbf{z}_L) \prod_{i=1}^{L-1} p_\theta(\mathbf{z}_i|\mathbf{z}_{i+1})$
+
+% \textbf{Hierarchical ELBO:}
+% $\mathcal{L}_{\theta,\phi}(\mathbf{x}) = \E[q_\phi]{\log p_\theta(\mathbf{x}|\mathbf{z}_1)} - \KL(q_\phi(\mathbf{z}_L|\mathbf{x}) \parallel p_\theta(\mathbf{z}_L)) - \sum_{i=1}^{L-1} \E[\mathbf{z}_{i+1} \sim q_\phi]{\KL(q_\phi(\mathbf{z}_i|\mathbf{x}) \parallel p_\theta(\mathbf{z}_i|\mathbf{z}_{i+1}))}$
+
+\subsection{Gaussian Integrals \& KL Divergences}
+
+For $p = \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma})$ and $q = \mathcal{N}(\mathbf{m}, \mathbf{L})$:
+
+\textbf{Entropy:} $H(p) = \frac{1}{2}[D(\ln 2\pi + 1) + \ln|\boldsymbol{\Sigma}|]$
+
+\textbf{Cross-entropy:} $H(p,q) = \frac{1}{2}[D \ln 2\pi + \ln|\mathbf{L}| + \text{tr}(\mathbf{L}^{-1}\boldsymbol{\Sigma}) + (\boldsymbol{\mu} - \mathbf{m})^T \mathbf{L}^{-1}(\boldsymbol{\mu} - \mathbf{m})]$
+
+\textbf{KL Divergence:} $\KL(p \parallel q) = \frac{1}{2}[\ln \frac{|\mathbf{L}|}{|\boldsymbol{\Sigma}|} + \text{tr}(\mathbf{L}^{-1}\boldsymbol{\Sigma}) - D + (\boldsymbol{\mu} - \mathbf{m})^T \mathbf{L}^{-1}(\boldsymbol{\mu} - \mathbf{m})]$
+
+\textbf{Diagonal Case:} If $\boldsymbol{\Sigma} = \text{diag}\{\sigma_i^2\}$, $\mathbf{L} = \text{diag}\{l_i^2\}$:
+$\KL(p \parallel q) = \frac{1}{2}\sum_{i=1}^D \left[\ln \frac{l_i^2}{\sigma_i^2} + \frac{\sigma_i^2}{l_i^2} - 1 + \frac{(\mu_i - m_i)^2}{l_i^2}\right]$
