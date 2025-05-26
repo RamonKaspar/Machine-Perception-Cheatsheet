@@ -1,0 +1,22 @@
+\section{Foundation Models}
+
+\textbf{NLP Found. Model:}
+1st Gen: Encoder + Task Decoder (BERT, ELMO) $\to$ 2nd Gen: Model + Finetuning (GPT-3) $\to$ 3rd Gen: LLMs (ChatGPT)
+
+\textbf{Vision Transformer (ViT):} Images as tokens, patch embeddings + positional encoding + transformer
+
+\textbf{Masked AutoEncoder (MAE):} Self-supervised pretr. by masking image patches, then reconstructing
+
+\textbf{CLIP:} Contrastive learning for shared image-text feature space (Image enc. + Text enc.). Max. cosine similarity for matching pairs, min. for non-matching. 
+
+\textbf{Segment Anything (SAM):} Heavy encoder: MAE-pretrained ViT on SA-1B dataset; Light decoder: Prompt-based segmentation; Generalizes to any object without retraining
+
+\textbf{DINOv2:} Self-supervised learning for general-purpose visual features. Self-distillation: Student matches teacher (built from past student iterations). No text supervision needed (unlike CLIP).
+
+\textbf{DreamBooth:} Finetune diffusion models for customized text-to-image generation with few examples
+
+\textbf{Zero-1-to-3:} View synthesis from single image. Condition diffusion model on CLIP image embedding + 3D rotation (R,T). Channel-concatenate image to U-Net features. Caveat: Poor perf. on humans
+
+\textbf{SiTH:} Single-view textured human reconstruction addressing Zero-1-to-3 limitations
+
+\emph{Key Insights} \textbf{Deterministic tasks:} Pretrained encoder + task-specific decoder often superior; \textbf{Generative tasks:} Model finetuning enables 2D→3D adaptation and custom.; \textbf{Current state:} Vision lacks truly gener. model equivalent to LLMs in NLP
