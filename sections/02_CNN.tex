@@ -15,18 +15,14 @@
 Any linear, shift-equivariant transform can be written as a convolution
 \end{highlightbox*}
 
-\textbf{Key Advantages over Fully Connected:}
-\begin{itemize}
-    \item \textbf{Parameter sharing:} Same weights reused across spatial locations
-    \item \textbf{Local connectivity:} Each neuron connects only to local region, not all inputs
-\end{itemize}
+\textbf{Advantages over FNN:} \textit{Parameter sharing:} Same weights reused across spatial locations; \textit{Local connectivity:} Each neuron connects only to local region.
 
 \subsection{Convolution Operations}
 
 \textbf{Correlation ($\star$)} (template matching):
 \highlight{$\mathbf{I}'(i,j) = \sum_{m=-k}^k \sum_{n=-k}^k \mathbf{K}(m,n) \mathbf{I}(i+m, j+n)$}
 
-\textbf{Convolution ($*$):} $K \in \R^{M \times N}$, $k=\text{floor}(M/2)$
+\emph{Convolution ($*$):} $K \in \R^{M \times N}$, $k=\text{floor}(M/2)$
 {\small
 \highlight{$\mathbf{I}'(i,j) = \sum_{m,n=-k}^k \sum_{n=-k}^k \mathbf{K}(\textcolor{red}{-}m,\textcolor{red}{-}n) \mathbf{I}(i+m, j+n)$}
 }
@@ -66,7 +62,7 @@ Backward on weights $w$: $\frac{\partial \mathcal{L}}{\partial w_{m,n}^{(l)}} = 
 
 \subsection{Pooling Operations}
 
-\textbf{Max Pooling:} 
+\emph{Max Pooling:} 
 Forward: $z^{(l)} = \max\{z^{(l-1)_i}$\\
 Backward: $\frac{\partial z^{(l)}}{\partial z^{(l-1)}_i} = \1_{\{i = i^*\}}$ and
 $\delta^{(l-1)}=\{ \delta^{(l)}\}_{i^*}$ with {\small $i^* = \text{a max}_i\{ z^{(l-1)}_i \}$}
@@ -90,7 +86,7 @@ Advantages: (1) Better convergence, (2) Propagate high-frequency information
 
 \textbf{Strategy:} \textit{Downsample} with convolutions/pooling, then \textit{upsample} to original resolution
 
-\textbf{Upsampling Methods:}
+\emph{Upsampling Methods:}
 \begin{itemize}
     \item \textbf{Nearest Neighbor:} Duplicate values into corresponding cells
     \item \textbf{Bed of Nails:} Place value top-left, fill rest with $0$'s
@@ -98,4 +94,4 @@ Advantages: (1) Better convergence, (2) Propagate high-frequency information
     \item - \textbf{Strided Upconvolution or Transposed Conv} \textit{(learned!)}:  Insert $(s-1)$ zeros between pixels, $(k-p-1)$ padding, then convolve. Transposed Convolution Output Size: $L_{\text{out}} = (L_{\text{in}} - 1) \cdot \text{Stride} - 2 \cdot \text{Pad} + \text{Dilation} \cdot (\text{Kernel} - 1) + \text{OutPad} + 1$
 \end{itemize}
 
-\textbf{U-Net:} Skip connections between corresponding down/upsampling layers; Combines global context (from skip connections) with local information (from previous layer); Essential for preserving fine-grained spatial information.
+\emph{U-Net:} Skip connections between corresponding down/upsampling layers; Combines global context (from skip connections) with local information (from previous layer); Essential for preserving fine-grained spatial information.

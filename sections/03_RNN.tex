@@ -28,7 +28,7 @@ For Elman RNN: $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k
 \textbf{Recursive Formulation:}
 $\frac{\partial L}{\partial \mathbf{h}_t} = \frac{\partial L_t}{\partial \mathbf{h}_t} + \frac{\partial L}{\partial \mathbf{h}_{t+1}} \frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t}$
 
-\textbf{Key Gradients:} $\frac{\partial L_t}{\partial \mathbf{o}_t} = \hat{\mathbf{y}}_t - \mathbf{y}_t$ (for cross-entropy loss); $\frac{\partial \mathbf{o}_t}{\partial \mathbf{h}_t} = \mathbf{V}$ (linear output layer); $\frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t} = \text{diag}(1 - \mathbf{h}_{t+1}^2) \mathbf{W}_{hh}$ (for tanh)
+\textbf{Key Gradients:} {\small $\frac{\partial L_t}{\partial \mathbf{o}_t} = \hat{\mathbf{y}}_t - \mathbf{y}_t$ (for CE loss); $\frac{\partial \mathbf{o}_t}{\partial \mathbf{h}_t} = \mathbf{V}$ (linear output layer); $\frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t} = \text{diag}(1 - \mathbf{h}_{t+1}^2) \mathbf{W}_{hh}$ (tanh)}
 
 \subsection{Gradient Vanishing/Exploding}
 
@@ -46,7 +46,7 @@ Then: $\mathbf{h}_t = (\mathbf{Q} \boldsymbol{\Lambda}^t \mathbf{Q}^T) \mathbf{h
 
 \textbf{Truncated BPTT:} Limit sum to last $\kappa$ steps to reduce computational cost: {\footnotesize $\frac{\partial L_t}{\partial \mathbf{W}} \approx \sum_{k=t-\kappa}^t \frac{\partial L_t}{\partial \hat{\mathbf{y}}_t} \frac{\partial \hat{\mathbf{y}}_t}{\partial \mathbf{h}_t} \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} \frac{\partial^+ \mathbf{h}_k}{\partial \mathbf{W}}$}
 
-\textbf{Gradient Clipping:} 
+\emph{Gradient Clipping:} 
 {
 \footnotesize
 $\theta \leftarrow 

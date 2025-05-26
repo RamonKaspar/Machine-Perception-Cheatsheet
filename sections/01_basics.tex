@@ -61,20 +61,14 @@ Backward weights: $\frac{\partial L}{\partial \mathbf{W}_{ij}^{(l)}} = \boldsymb
 
 \textbf{Useful derivatives:} $\frac{\partial \mathbf{A}\mathbf{x}}{\partial \mathbf{x}} = \mathbf{A}$, $\frac{\partial \mathbf{x} \odot \mathbf{y}}{\partial \mathbf{x}} = \text{diag}(\mathbf{y})$
 
-
-
 \textbf{SGD:} $\theta \leftarrow \theta - \eta \nabla_\theta L(\theta)$ (single sample, high variance, may escape local minima)
 
 \textbf{Momentum:} $\mathbf{v} \leftarrow \alpha \mathbf{v} - \epsilon \nabla_\theta L(\theta), \quad \theta \leftarrow \theta + \mathbf{v}$
 
-
-\textbf{AdaGrad:} $\mathbf{r} \leftarrow \mathbf{r} + \nabla \odot \nabla, \quad \Delta\theta = -\frac{\epsilon}{\delta + \sqrt{\mathbf{r}}} \odot \nabla$
-
-\textbf{RMSProp:} $\mathbf{r} \leftarrow \rho \mathbf{r} + (1-\rho) \nabla \odot \nabla$ (exponential moving average)
-
 \textbf{Adam:} 
-$\mathbf{m} \leftarrow \beta_1 \mathbf{m} + (1-\beta_1) \nabla, \quad \mathbf{v} \leftarrow \beta_2 \mathbf{v} + (1-\beta_2) \nabla \odot \nabla$\\
-$\hat{\mathbf{m}} = \frac{\mathbf{m}}{1-\beta_1^t}, \quad \hat{\mathbf{v}} = \frac{\mathbf{v}}{1-\beta_2^t}, \quad \Delta\theta = -\frac{\eta}{\sqrt{\hat{\mathbf{v}}} + \epsilon}\hat{\mathbf{m}}$
+{ \small
+$\mathbf{m} \leftarrow \beta_1 \mathbf{m} + (1-\beta_1) \nabla, \quad \mathbf{v} \leftarrow \beta_2 \mathbf{v} + (1-\beta_2) \nabla \odot \nabla$ 
+$\hat{\mathbf{m}} = \frac{\mathbf{m}}{1-\beta_1^t}, \quad \hat{\mathbf{v}} = \frac{\mathbf{v}}{1-\beta_2^t}, \quad \Delta\theta = -\frac{\eta}{\sqrt{\hat{\mathbf{v}}} + \epsilon}\hat{\mathbf{m}}$}
 
 \subsection{Training Techniques \& Generalization}
 
@@ -94,7 +88,7 @@ $\hat{\mathbf{m}} = \frac{\mathbf{m}}{1-\beta_1^t}, \quad \hat{\mathbf{v}} = \fr
 
 
 
-\textbf{Regularization Techniques:}
+\emph{Regularization Techniques:}
 \begin{itemize}
     \item $L_1$ penalty: $\lambda \norm{\mathbf{w}}_1$ (promotes sparsity)
     \item $L_2$ penalty: $\lambda \norm{\mathbf{w}}_2^2$ (weight decay, prevents large weights)
