@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{shortcuts}[2025/05/26 Modern Shortcuts Package]
+\ProvidesPackage{shortcuts}[2025/05/26]
 
 % === GENERAL ===
 
@@ -12,7 +12,7 @@
 \RequirePackage{units}
 \RequirePackage{etoolbox}
 
-% Modern math improvements
+% math improvements
 \RequirePackage{mleftright} % Better delimiter spacing
 \mleftright % Activate improved spacing
 
@@ -24,11 +24,6 @@
 \newcommand\minus{\scalebox{.6}[1]{\ensuremath{-}}}
 \newcommand\minusone{{\minus 1}}
 \newcommand\minustop{{\minus\!\top}}
-
-% Add characters (improved for modern LaTeX)
-\def\hbar{{\mathchar'26\mkern-7mu h}}
-\def\bbar{{\mathchar'26\mkern-7mu b}}
-\def\dbar{{\mathchar'26\mkern-11mu d}}
 
 % === BRACKETS ===
 
@@ -171,7 +166,7 @@
 % Require xcolor for highlighting
 \RequirePackage[svgnames,dvipsnames]{xcolor}
 
-% Define colors - modern palette
+% Define colors
 \colorlet{highlight-color}{Gold!25}
 \colorlet{highlight-color-alt}{Gray!15}
 \colorlet{box-border}{Gray!40}
@@ -220,7 +215,7 @@
     \end{minipage}%
 }}% --- TODO ---
 
-% Modern info box
+% info box
 \NewDocumentCommand{\infobox}{D[]{} +m}{%
     \fcolorbox{blue!40}{blue!5}{%
         \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}%
@@ -229,8 +224,6 @@
         \end{minipage}%
     }%
 }
-
-% === MODERN ADDITIONS ===
 
 % Machine learning specific commands
 \DeclareMathOperator{\sign}{sign}
