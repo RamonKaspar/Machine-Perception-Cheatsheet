@@ -1,0 +1,119 @@
+\section{Autoregressive Models}
+
+
+\textbf{Goal:} Tractable density estimation using chain rule factorization
+\highlight{$p(\mathbf{x}) = \prod_{i=1}^n p(x_i | \mathbf{x}_{<i})$}
+
+\textbf{Discriminative vs. Generative:} Discriminative: $P(Y | X)$; Generative: $P(X, Y)$ (possibly missing $Y$)
+
+\textbf{Seq. modeling:} From $x_i, \ldots, x_{i+k}$ predict $x_{i+k+1}$
+
+\textbf{Tabular approach:} Needs $2^{i-1}$ parameters for $p(x_i | \mathbf{x}_{<i})$ - not scalable
+
+\textbf{Fully Visible Sigmoid Belief Networks (\emph{FVSBN}):}
+{ \footnotesize
+$f_i(\mathbf{x}_{1:i-1}) = \sigma(\alpha_0^{(i)} + \sum_{j=1}^{i-1} \alpha_j^{(i)} x_j) \quad \quad$ 
+$p_{\theta_i}(x_i | \mathbf{x}_{<i}) = \text{Bernoulli}(f_i(\mathbf{x}_{1:i-1}))$ $\quad \Rightarrow \sum_i i = (n^2+n)/2$ params needed}
+
+\textbf{Neural Autoreg. Density Estimator (\emph{NADE}):}
+{ 
+$\mathbf{h}_i = \sigma(\mathbf{b} + \mathbf{W}_{:,1:i-1} \mathbf{x}_{1:i-1})$
+$\quad \hat{x}_i = \sigma(c_i + \mathbf{V}_{i,:} \mathbf{h}_i)$ }
+
+\textbf{Efficiency trick:} $\mathbf{h}_i = \mathbf{h}_{i-1} + \mathbf{W}_i x_i$ (inc. comp.)
+
+\textbf{Training:} $\mathcal{L} = \sum_{t=1}^T \sum_{i=1}^D \log p(x_i^{(t)} | \mathbf{x}_{<i}^{(t)})$
+
+\textbf{Advantages:} (1) $\mathcal{O}(TD)$ complexity, (2) Second-order optimization OK, (3) Arbitrary ordering
+
+% \textbf{Variants:} RNADE (real-valued with Gaussian mixtures), ConvNADE (convolutional), DeepNADE (order-agnostic)
+
+\emph{Masked Autoencoder Distribution Estimator (MADE)}
+$\quad $\textbf{Idea:} Constrain autoencoder to satisfy autoregressive property; 
+\textbf{Constraint:} No computational path between output $\hat{x}_d$ and inputs $x_{d+1:D}$
+
+\textbf{Implementation:} Mask weights to prevent inform. flow from future inputs; 
+\textbf{Training trick:} Randomly re-mask during training (similar to dropout)
+
+\textbf{Trade-off:} Fast training like autoencoders, but sampling requires $D$ forward passes.
+
+\emph{PixelRNN:} Generate pixels from corner using LSTM dependencies; \textbf{Cons:} Slow due to seq. generation
+
+\emph{PixelCNN:} Use CNN over context region instead of LSTM; \textbf{Training:} Parallelizable with masked convolutions; \textbf{Inference:} Still sequential (slow)
+
+% \textbf{Color channel modeling:} {\small
+% $p(x_i | \mathbf{x}_{<i}) = p(x_{i,R} | \mathbf{x}_{<i}) \cdot p(x_{i,G} | x_{i,R}, \mathbf{x}_{<i}) \cdot p(x_{i,B} | x_{i,R}, x_{i,G}, \mathbf{x}_{<i})$}
+
+% \textbf{Blind spot probl.:} Finite kernel masks create regions where pred. don't depend on all relevant context
+
+% \textbf{Solutions:} (1) Vertical and horizontal stacks, (2) Gated nonlinearities: {\footnotesize $\mathbf{h}_{k+1} = \tanh(\mathbf{W}_{k,f} * \mathbf{h}_k) \odot \sigma(\mathbf{W}_{k,g} * \mathbf{h}_k)$ }
+
+\emph{WaveNet (Audio):} PixelCNN for audio with dilated convolutions; \textbf{Problem:} Audio dimension $>16000/s$; \textbf{Solution:} Dilated conv for exponential receptive field growth
+
+% \subsection{Variational RNN (VRNN)}
+
+% \textbf{Goal:} Add stochastic latent variables to RNN hidden states for expressiveness and robustness
+
+% \textbf{Deterministic transition:} $\mathbf{h}_t = f_\theta(\mathbf{h}_{t-1}, \mathbf{x}_t, \mathbf{z}_t)$
+
+% \textbf{Dynamic prior:} $p_\theta(\mathbf{z}_t | \mathbf{h}_{t-1})$
+
+% \textbf{Overall prior:} $p_\theta(\mathbf{z}) = \prod_{t=1}^T p_\theta(\mathbf{z}_t | \mathbf{h}_{t-1})$
+
+% \textbf{Encoder:} $q_\phi(\mathbf{z} | \mathbf{x}) = \prod_{t=1}^T q_\phi(\mathbf{z}_t | \mathbf{x}_t, \mathbf{x}_{<t}, \mathbf{z}_{<t})$
+
+% \textbf{Decoder:} $p_\theta(\mathbf{x}_t | \mathbf{z}_t) = g^{\text{out}}(\mathbf{h}_{t-1}, \mathbf{z}_t)$
+
+% \textbf{ELBO:}
+% $\mathcal{L}_{\theta,\phi} = \sum_{t=1}^T \E[q_\phi(\mathbf{z}_t | \mathbf{x}_t, \mathbf{x}_{<t}, \mathbf{z}_{<t})]{\log p_\theta(\mathbf{x}_t | \mathbf{z}_t, \mathbf{z}_{<t}, \mathbf{x}_{<t})} - \KL(q_\phi(\mathbf{z}_t | \mathbf{x}_t, \mathbf{x}_{<t}, \mathbf{z}_{<t}) \parallel p_\theta(\mathbf{z}_t | \mathbf{z}_{<t}, \mathbf{x}_{<t}))$
+
+% \textbf{Advantages:} (1) Robustness through $\mathbf{z}_t$ randomness, (2) High-level latent variables more informative for future prediction
+
+\subsection{Self-Attention \& Transformers}
+
+\highlight{$\mathbf{Y} = \text{softmax}\left(\frac{\mathbf{X}\mathbf{W}_Q (\mathbf{X}\mathbf{W}_K)^T}{\sqrt{D}} + \mathbf{M}\right) \mathbf{X}\mathbf{W}_V$}
+
+\begin{itemize}
+    \item Learnable weights: $W_K, W_V, W_Q \in \R^{D \times D}$
+    \item $\mathbf{M}$ is causal mask (prevents accessing future tokens)
+    \item \small Key: $\mathbf{K} = \mathbf{X}\mathbf{W}_K$, Value: $\mathbf{V} = \mathbf{X}\mathbf{W}_V$, Query: $\mathbf{Q} = \mathbf{X}\mathbf{W}_Q$
+    \item Attention weights: $\boldsymbol{\alpha} = \text{softmax}(\mathbf{Q}\mathbf{K}^T / \sqrt{D})$
+    \item \textbf{Intuition:} Compute similarity between queries and keys to determine how much to attend to each value
+\end{itemize}
+
+\textbf{Positional Encoding:} Inject position information with sinusoidal functions
+
+$\text{PE}_{i,t} = \begin{cases}
+\sin(\omega_k t) & \text{if } i = 2k \\
+\cos(\omega_k t) & \text{if } i = 2k+1
+\end{cases}$
+
+Where $\omega_k = 10000^{-2k/d}$, $t$ position, $i$ embedding
+
+\textbf{Complexity:} $\mathcal{O}(T^2 D)$ vs. $\mathcal{O}(TD^2)$ for RNNs
+
+\textbf{Multi-head attention:} split attention into $h$ heads; each head calculates a chunk of the representation. 
+
+\subsection{Large Language Models (LLMs) \& GPT}
+
+LLMs predict next token given seq. of input tokens
+
+\begin{itemize}
+    \item \textbf{Long-range dependencies:} Self-attention handles context modeling better than RNNs
+    \item \textbf{Scalability:} Transformers parallelizable, scale to billions of parameters and large datasets
+\end{itemize}
+
+\textbf{Tokenization Process:} (1) Convert text into tokens (e.g., sub-words), (2) Assign each token a unique integer, (3) Replace integers with learned embeddings.
+
+\textbf{GPT Training:} {\small \textit{(1) Unsupervised pretraining:} $L_1(X) = \sum_i \log P(x_i | x_{i-1}, x_{i-2}, \ldots, x_{i-k})$; \textit{(2) Supervised finetuning:} $L_2(X,Y) = \sum_{(x,y)} \log P(y | x^m, \ldots, x^m)$; \\ \textit{(2) Combined objective:} $L_3 = L_2(X,Y) + \lambda \cdot L_1(X)$}
+
+\subsection{Vector-Quantized VAE (VQ-VAE)}
+
+\textbf{Problem:} Autoregressive models struggle with high-resolution images/video; 
+\textbf{Solution:} Convert images to discrete token sequences using learned codebook
+
+\textbf{Architecture:} $\mathbf{x} \xrightarrow{\text{enc}} \mathbf{z} \xrightarrow{\text{codebook}} \mathbf{z}_q \xrightarrow{\text{dec}} \hat{\mathbf{x}}$
+
+\textbf{Codebook:} Set of learned vectors for quantization
+
+\textbf{Application:} Run autoregressive model in quantized latent space (Tokens in latent space are semantically more meaningful than individual pixel values).
