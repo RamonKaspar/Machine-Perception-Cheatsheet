@@ -1,0 +1,52 @@
+\documentclass[%
+    a4paper,
+    fontsize=10pt,
+    landscape,
+    pagesize,
+    headinclude,
+    DIV=12,
+    BCOR=0mm,
+]{scrartcl}
+
+\usepackage[margin=5mm,headsep=1mm,footskip=1mm]{geometry}
+
+\usepackage{wrapfig}
+
+% Uncomment for debugging layout
+%\usepackage{showframe}
+
+% Include preamble and shortcuts
+\input{preamble}
+\usepackage{shortcuts}
+
+% Set graphic path
+\graphicspath{{./figures/}}
+
+% Document metadata
+\title{MP - Cheat Sheet}
+\author{Ramon Kaspar}
+\date{26.05.2025}
+\hypersetup{
+    pdftitle={Machine Perception - Cheat Sheet},
+}
+
+% === BEGIN DOCUMENT ===
+
+\begin{document}
+
+\begin{multicols*}{4}
+    \raggedcolumns % Prevent forced column balancing
+    
+    % Suppress enumeration of sections if desired
+    %\setcounter{secnumdepth}{0}
+    
+    % Optional title
+    %\maketitle
+    
+    % Content sections    
+    % \input{sections/_example_}
+    \input{sections/01_basics}
+    
+    
+\end{multicols*}
+\end{document}

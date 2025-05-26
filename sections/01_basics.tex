@@ -1,0 +1,111 @@
+\section{ML Basics}
+
+\textbf{MLE:} $\hat{\theta} = \argmax_\theta \sum_{i=1}^n \log p(x_i \mid \theta)$\\
+\textbf{MAP:} $\theta^* \in \argmax p(\theta \mid X, y) = \argmax p(y \mid X, \theta) p(\theta)$
+
+\textbf{CE:} {\small $H(p, q) = -\E[p]{\log q} = -\sum_x p(x) \log q(x)$} \\
+\textbf{KL:} {\small $\KL(p \parallel q) = \E[p]{\log(p/q)} = \sum_x p(x) \log \frac{p(x)}{q(x)}$ }
+
+Min. KL $\iff$ max. MLE (for infinite sample size)
+
+\highlight{$H(p, q) = H(p) + \KL(p \parallel q)$}
+
+For empirical distribution $p = \sum_i \delta_{x_i}$: $H(p, q) = \text{NLL}(q) = -\KL(p \parallel q) + H(p)$
+
+\textbf{BCE:} {\small $L(\theta) = -\sum_i [y_i \log(\hat{y}_i) + (1-y_i) \log(1-\hat{y}_i)]$}
+
+\subsection{Neural Networks}
+
+\textbf{Perceptron:} $\hat{y} = \1\{\mathbf{w}^\top \mathbf{x} + b > 0\}$. \\
+Learning: $\theta \leftarrow \theta + \eta(y_i - \hat{y}_i)\mathbf{x}_i$\\
+Converges in finite time iff data is linearly separable.
+
+\textbf{Multi-Layer Perceptron:} 
+$\hat{y} = \sigma(\mathbf{W}_k \sigma(\mathbf{W}_{k-1} \cdots \sigma(\mathbf{W}_1 \mathbf{x} + \mathbf{b}_1) \cdots + \mathbf{b}_{k-1}) + \mathbf{b}_k)$
+
+\textbf{Universal Approximation Theorem:} For any continuous function $f$ on compact set, $\exists$ NN $g$ with single hidden layer and nonlinear activation s.t. $|g(x) - f(x)| < \varepsilon$ $\forall x$.
+
+\subsection{Activation Functions}
+\begin{center}
+\small
+\def\arraystretch{0.9}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Function} & \textbf{Formula} & \textbf{Derivative} & \textbf{Range} \\
+\midrule
+Sigmoid & $\frac{1}{1 + e^{-x}}$ & $\sigma(x)(1 - \sigma(x))$ & $(0, 1)$ \\
+Tanh & $\frac{e^x - e^{-x}}{e^x + e^{-x}}$ & $1 - \tanh^2(x)$ & $(-1, 1)$ \\
+ReLU & $\max(0, x)$ & $\1\{x \geq 0\}$ & $[0, \infty)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{-3mm}
+
+\textbf{Properties:} Sigmoid/tanh saturate $\Rightarrow$ vanishing gradients. Tanh zero-centered. ReLU: fast convergence, can explode, dead neurons possible.
+
+\textbf{Vector derivatives:}
+$\frac{\partial \sigma(\mathbf{x})}{\partial \mathbf{x}} = \text{diag}(\sigma(\mathbf{x}) \odot (1 - \sigma(\mathbf{x})))$\\
+$\frac{\partial \tanh(\mathbf{x})}{\partial \mathbf{x}} = \text{diag}(1 - \tanh^2(\mathbf{x}))$\\
+$\frac{\partial \text{softmax}(\mathbf{x})}{\partial \mathbf{x}} = \text{diag}(\mathbf{y}) - \mathbf{y}\mathbf{y}^\top$
+
+\subsection{Backpropagation \& Training}
+
+Backprop is a way to compute the chain rule that avoids recomputing the same terms multiple times (aka Dynamic Programming).
+
+\textbf{Chain rule:} $\mathbf{y} = g(\mathbf{x}), \mathbf{z} = f(\mathbf{y}) \Rightarrow \frac{\partial \mathbf{z}}{\partial \mathbf{x}} = \frac{\partial \mathbf{z}}{\partial \mathbf{y}} \frac{\partial \mathbf{y}}{\partial \mathbf{x}}$
+
+\textbf{MLP backprop:}\\
+Forward: $\mathbf{z}^{(l)} = \mathbf{W}^{(l)} \mathbf{a}^{(l-1)} + \mathbf{b}^{(l)}, \quad \mathbf{a}^{(l)} = f(\mathbf{z}^{(l)})$\\
+Backward inputs: $\boldsymbol{\delta}^{(l)} = \boldsymbol{\delta}^{(l+1)} \cdot \frac{\partial \mathbf{z}^{(l+1)}}{\partial \mathbf{z}^{(l)}}$\\
+Backward weights: $\frac{\partial L}{\partial \mathbf{W}_{ij}^{(l)}} = \boldsymbol{\delta}^{(l)} \frac{\partial \mathbf{z}^{(l)}}{\partial \mathbf{W}_{ij}^{(l)}}$
+
+\textbf{Useful derivatives:} $\frac{\partial \mathbf{A}\mathbf{x}}{\partial \mathbf{x}} = \mathbf{A}$, $\frac{\partial \mathbf{x} \odot \mathbf{y}}{\partial \mathbf{x}} = \text{diag}(\mathbf{y})$
+
+
+
+\textbf{SGD:} $\theta \leftarrow \theta - \eta \nabla_\theta L(\theta)$ (single sample, high variance, may escape local minima)
+
+\textbf{Momentum:} $\mathbf{v} \leftarrow \alpha \mathbf{v} - \epsilon \nabla_\theta L(\theta), \quad \theta \leftarrow \theta + \mathbf{v}$
+
+
+\textbf{AdaGrad:} $\mathbf{r} \leftarrow \mathbf{r} + \nabla \odot \nabla, \quad \Delta\theta = -\frac{\epsilon}{\delta + \sqrt{\mathbf{r}}} \odot \nabla$
+
+\textbf{RMSProp:} $\mathbf{r} \leftarrow \rho \mathbf{r} + (1-\rho) \nabla \odot \nabla$ (exponential moving average)
+
+\textbf{Adam:} 
+$\mathbf{m} \leftarrow \beta_1 \mathbf{m} + (1-\beta_1) \nabla, \quad \mathbf{v} \leftarrow \beta_2 \mathbf{v} + (1-\beta_2) \nabla \odot \nabla$\\
+$\hat{\mathbf{m}} = \frac{\mathbf{m}}{1-\beta_1^t}, \quad \hat{\mathbf{v}} = \frac{\mathbf{v}}{1-\beta_2^t}, \quad \Delta\theta = -\frac{\eta}{\sqrt{\hat{\mathbf{v}}} + \epsilon}\hat{\mathbf{m}}$
+
+\subsection{Training Techniques \& Generalization}
+
+\textbf{Bias-Variance Trade-off:} \textit{High bias:} underfitting, model too simple; \textit{High variance:} overfitting, model too complex, sensitive to training data
+
+\textbf{Effective Model Complexity (EMC):} $\text{EMC}_{D,\varepsilon}(\mathcal{T})$ measures model's effective complexity given dataset $D$, tolerance $\varepsilon$, and training procedure $\mathcal{T}$.
+
+\begin{itemize}
+    \item $\text{EMC}_{D,\varepsilon}(\mathcal{T}) \ll n$: Under-parameterized (increasing complexity decreases test error)
+    \item $\text{EMC}_{D,\varepsilon}(\mathcal{T}) \gg n$: Over-parameterized (increasing complexity decreases test error)
+    \item $\text{EMC}_{D,\varepsilon}(\mathcal{T}) \approx n$: Critical regime (increasing complexity may increase or decrease test error)
+\end{itemize}
+
+\textbf{Double Descent:} Test error decreases, then increases (classical overfitting), then decreases again as model size grows. Occurs at interpolation threshold where model starts fitting training data perfectly.
+
+\textbf{Grokking:} Phenomenon where generalization performance suddenly improves long after achieving perfect training accuracy. Model continues learning meaningful patterns after memorizing train data.
+
+
+
+\textbf{Regularization Techniques:}
+\begin{itemize}
+    \item $L_1$ penalty: $\lambda \norm{\mathbf{w}}_1$ (promotes sparsity)
+    \item $L_2$ penalty: $\lambda \norm{\mathbf{w}}_2^2$ (weight decay, prevents large weights)
+    \item \textbf{Dropout:} Randomly set neurons to $0$ during training
+    \item \textbf{Data augmentation:} Random transformations (rotation, scaling, noise)
+    \item \textbf{Early stopping:} Stop when validation error increases for $p$ consecutive epochs
+    \item \textbf{Batch normalization:} Addresses internal covariate shift, normalizes layer inputs
+\end{itemize}
+
+\textbf{Normalization:} \textit{Batch normalization:} Normalize inputs to each layer, addresses internal covariate shift; \textit{Layer normalization:} Normalize across features instead of batch
+
+\textbf{Residual connections:} $\mathbf{h}_{l+1} = f(\mathbf{h}_l) + \mathbf{h}_l$ (skip connections); Prevents vanishing gradients, enables training deeper networks; Allows gradient flow and propagates high-frequency information
+
+

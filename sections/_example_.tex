@@ -1,0 +1,121 @@
+\section{Example Section}
+
+\subsection*{Subsection w/o Numbering}
+
+\subsection{Fonts and Typography}
+
+\emph{Text styles:}\\
+Normal text -- 
+\textit{Italic} -- 
+\textbf{Bold} -- 
+\textbf{\textit{BoldItalic}}
+\\
+\textrm{Serif (Palatino)} -- 
+\textsf{Sans Serif (Helvetica)} -- 
+\texttt{Monospace (Bera Mono)}
+\\
+{\tiny tiny} --
+{\scriptsize scriptsize} --
+{\footnotesize footnotesize} --
+{\small small} --
+{\normalsize normalsize} --
+{\large large} --
+{\Large Large}
+
+\emph{Modern typography features:}\\
+With microtype: "Quotation marks" and -- en-dashes, --- em-dashes work perfectly.
+The font kerning and spacing is automatically optimized.
+
+\subsection{Mathematical Examples}
+
+\emph{Basic math:}\\
+Inline: $E = mc^2$, $\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$
+
+\emph{Display math:}
+\begin{align}
+    \mathcal{L}(\theta) &= \sum_{i=1}^n \log p(x_i \mid \theta) \\
+    \nabla_\theta \mathcal{L} &= \sum_{i=1}^n \nabla_\theta \log p(x_i \mid \theta)
+\end{align}
+
+\emph{Custom commands:}\\
+Probability: $\P{X = 1}$, $\P*{X \mid Y}$\\
+Expectation: $\E{X}$, $\E*[Y]{X}$\\
+Norms: $\norm{x}_2$, $\abs{x}$\\
+Brackets: $\paren{a + b}$, $\brack{0, 1}$, $\brace{x : x > 0}$
+
+\subsection{Highlighting and Boxes}
+
+\emph{Equation highlighting:}\\
+\highlight{$a^2 + b^2 = c^2$}
+
+\emph{Custom highlight colors:}\\
+\highlight*[LightBlue]{Important formula: $\nabla \cdot \mathbf{E} = \frac{\rho}{\epsilon_0}$}
+
+\emph{Algorithm box:}\\
+\algobox[.8]{%
+    \begin{enumerate}
+        \item Initialize parameters $\theta_0$
+        \item For $t = 1, 2, \ldots, T$:
+        \begin{itemize}
+            \item Compute gradient: $g_t = \nabla \mathcal{L}(\theta_{t-1})$
+            \item Update: $\theta_t = \theta_{t-1} - \alpha g_t$
+        \end{itemize}
+        \item Return $\theta_T$
+    \end{enumerate}
+}
+
+\emph{Information box:}\\
+\infobox[Note]{This is an informational box that can contain important notes or definitions.}
+
+\emph{Highlight box:}\\
+\begin{highlightbox*}[LightCyan]
+    This is a highlighted text box that can span multiple lines and contain 
+    mathematical expressions like $\sum_{i=1}^n x_i$ inline.
+\end{highlightbox*}
+
+\subsection{Tables}
+
+\emph{Modern table styling:}
+\begin{center}
+\def\arraystretch{1.2}
+\begin{tabularx}{0.9\linewidth}{@{}lX@{}}
+    \toprule
+    \textbf{Method} & \textbf{Description} \\
+    \midrule
+    Linear Regression & Minimizes $\norm{y - X\beta}_2^2$ \\
+    Ridge Regression & Adds $\lambda \norm{\beta}_2^2$ penalty \\
+    Lasso Regression & Adds $\lambda \norm{\beta}_1$ penalty \\
+    \bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Modern ML Notation}
+
+\emph{Distributions:}\\
+$\Gauss{\mu, \sigma^2}$ -- Gaussian\\
+$\Uniform{a, b}$ -- Uniform\\
+$\Bernoulli{p}$ -- Bernoulli
+
+\emph{Linear algebra operators:}\\
+$\tr(A)$ -- trace\\
+$\rank(A)$ -- rank\\
+$\diag(a_1, \ldots, a_n)$ -- diagonal
+
+\emph{Information theory:}\\
+$\entropy(X) = -\sum_x p(x) \log p(x)$ -- Entropy\\
+$\KL(P \parallel Q) = \sum_x p(x) \log \frac{p(x)}{q(x)}$ -- KL divergence\\
+$\MI(X; Y) = \entropy(X) - \entropy(X \mid Y)$ -- Mutual information
+
+\subsection{Advanced Features}
+
+\emph{TODO reminders:}\\
+\todo{Complete the section on neural networks}
+
+\emph{Complex expressions:}\\
+The posterior distribution is:
+\highlight{$p(\theta \mid \mathcal{D}) = \frac{p(\mathcal{D} \mid \theta) p(\theta)}{\int p(\mathcal{D} \mid \theta') p(\theta') d\theta'}$}
+
+\emph{Derivatives:}\\
+$\deriv{f}{x}$ -- First derivative\\
+$\deriv[2]{f}{x}$ -- Second derivative\\
+$\pderiv{f}{x}$ -- Partial derivative

@@ -1,0 +1,252 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{shortcuts}[2025/05/26 Modern Shortcuts Package]
+
+% === GENERAL ===
+
+% Better design for tables
+\RequirePackage{booktabs}
+\RequirePackage{amsmath,amssymb,mathtools,bm,cancel,xfrac}
+\RequirePackage{xparse}% Custom Document Command
+\RequirePackage[safe]{tipa} % for overset
+\RequirePackage{trfsigns} %\laplace
+\RequirePackage{units}
+\RequirePackage{etoolbox}
+
+% Modern math improvements
+\RequirePackage{mleftright} % Better delimiter spacing
+\mleftright % Activate improved spacing
+
+% === UTILS ===
+
+\newcommand\dotwhenblank[1]{\ifblank{#1}{\:\cdot\:}{#1}}% Fill with dot when blank input
+
+% Short minus and transpose
+\newcommand\minus{\scalebox{.6}[1]{\ensuremath{-}}}
+\newcommand\minusone{{\minus 1}}
+\newcommand\minustop{{\minus\!\top}}
+
+% Add characters (improved for modern LaTeX)
+\def\hbar{{\mathchar'26\mkern-7mu h}}
+\def\bbar{{\mathchar'26\mkern-7mu b}}
+\def\dbar{{\mathchar'26\mkern-11mu d}}
+
+% === BRACKETS ===
+
+\newcommand\given\mid% Ensure it exists
+
+\DeclarePairedDelimiterX{\paren}[1]\lparen\rparen{
+    \renewcommand\given{\nonscript\:\delimsize\vert\nonscript\:\mathopen{}}%
+    \begingroup\dotwhenblank{#1}\endgroup}% --- ( ) ---
+
+\let\brack\undefined
+\DeclarePairedDelimiterX{\brack}[1]\lbrack\rbrack{
+    \renewcommand\given{\nonscript\:\delimsize\vert\nonscript\:\mathopen{}}%
+    \begingroup\dotwhenblank{#1}\endgroup}% --- [ ] ---
+
+\let\brace\undefined
+\DeclarePairedDelimiterX{\brace}[1]\lbrace\rbrace{
+    \renewcommand\given{\nonscript\:\delimsize\vert\nonscript\:\mathopen{}}%
+    \begingroup\dotwhenblank{#1}\endgroup}% --- { } ---
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}%--- ceil ---
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}% --- floor ---
+
+% === SUBSCRIPT / SUPERSCRIPT ===
+
+\providecommand*{\ped}[1]{\ensuremath{_\mathrm{#1}}}% --- subscript ---
+\providecommand*{\ap}[1]{\ensuremath{^\mathrm{#1}}}% --- superscript ---
+
+% === PRIMITIVES ===
+
+\DeclareMathOperator{\argmax}{arg\,max}% --- argmax ---
+\DeclareMathOperator{\argmin}{arg\,min}% --- argmin ---
+
+% Mathematical constants
+\providecommand*{\iu}{\ensuremath{j\mkern1mu}}% --- imaginary unit ---
+\providecommand*{\eu}{\ensuremath{\mathrm{e}}}% --- Euler number ---
+
+% Number sets
+\DeclareMathOperator{\R}{\mathbb{R}}% --- Real ---
+\DeclareMathOperator{\C}{\mathbb{C}}% --- Complex ---
+\DeclareMathOperator{\N}{\mathbb{N}}% --- Natural ---
+\DeclareMathOperator{\Z}{\mathbb{Z}}% --- Integer ---
+\DeclareMathOperator{\Q}{\mathbb{Q}}% --- Rational ---
+
+% Complex number parts
+\let\Re\undefined\DeclarePairedDelimiterXPP\Re[1]
+    {\mathrm{Re}}\lbrace\rbrace{}{#1}% --- Real part ---
+\let\Im\undefined\DeclarePairedDelimiterXPP\Im[1]
+    {\mathrm{Im}}\lbrace\rbrace{}{#1}% --- Imaginary part ---
+
+% Scientific notation
+\newcommand{\tothe}[1]{\mathop{\scalebox{.8}{%
+    \textrm{E}}\textrm{#1}}}% --- e.g. 10E-3 ---
+
+\newcommand{\1}{\mathbf{1}}  % Indicator function
+
+% === LINEAR ALGEBRA ===
+
+\DeclarePairedDelimiterX{\abs}[1]\lvert\rvert{
+    \dotwhenblank{#1}}% --- Absolute ---
+\DeclarePairedDelimiterX{\norm}[1]\lVert\rVert{
+    \dotwhenblank{#1}}% --- Norm ---
+\DeclarePairedDelimiterX{\avg}[1]\langle\rangle{
+    \dotwhenblank{#1}} % --- Average value ---
+
+% Additional linear algebra operators
+\DeclareMathOperator{\tr}{tr}% --- trace ---
+\DeclareMathOperator{\rank}{rank}% --- rank ---
+\DeclareMathOperator{\nullity}{nullity}% --- nullity ---
+\DeclareMathOperator{\diag}{diag}% --- diagonal ---
+
+% === COMPLEX ALGEBRA ===
+
+\newcommand{\underhat}[1]{\underline{\hat{#1}}}% --- complex AC formulas ---
+
+% === PROBABILITY ===
+
+% Usage (in math mode): \P*[sub]{blah \mid blah}
+\let\P\undefined
+\NewDocumentCommand{\P}{sD[]{}m}{\mathbb{P}_{#2}%
+    \IfBooleanTF#1{\paren*{#3}}{\paren{#3}}}% --- Probability ---
+
+\NewDocumentCommand{\E}{sD[]{}m}{\mathbb{E}_{#2}%
+    \IfBooleanTF#1{\brack*{#3}}{\brack{#3}}}% --- Expectation value ---
+
+\NewDocumentCommand{\V}{sD[]{}m}{\mathbb{V}_{#2}%
+    \IfBooleanTF#1{\brack*{#3}}{\brack{#3}}}% --- Variance ---
+
+\NewDocumentCommand{\Cov}{sD[]{}m}{\mathbb{C}\mathrm{ov}_{#2}%
+    \IfBooleanTF#1{\paren*{#3}}{\paren{#3}}}% --- Covariance ---
+
+% Distributions
+\NewDocumentCommand{\Gauss}{sD[]{}m}{\mathcal{N}_{#2}
+    \IfBooleanTF#1{\paren*{#3}}{\paren{#3}}}% --- Gaussian distribution ---
+
+\NewDocumentCommand{\Uniform}{sD[]{}m}{\mathcal{U}_{#2}
+    \IfBooleanTF#1{\paren*{#3}}{\paren{#3}}}% --- Uniform distribution ---
+
+\NewDocumentCommand{\Bernoulli}{sD[]{}m}{\mathcal{B}\mathrm{ern}_{#2}
+    \IfBooleanTF#1{\paren*{#3}}{\paren{#3}}}% --- Bernoulli distribution ---
+
+% === UNITS ===
+
+\DeclareMathAccent{\ring}{\mathalpha}{operators}{"17}% --- ring ---
+\providecommand*{\angs}{\ensuremath{\smash{\mathrm{\ringA}}}}% --- angs ---
+\providecommand*{\ohm}{\ensuremath{\mathrm{\Omega}}}% --- Ohm ---
+\providecommand*{\degree}{\ensuremath{^\circ}}% --- degree ---
+\providecommand*{\celsius}{\ensuremath{\mathrm{^\circC}}}% --- Celsius ---
+\providecommand*{\micro}{\ensuremath{\mu}}% --- micro ---
+
+% === DIFFERENTIAL AND DERIVATIVE ===
+
+\makeatletter
+\providecommand*{\diff}%
+	{\@ifnextchar^{\DIfF}{\DIfF^{}}}% --- Differential operator ---
+\def\DIfF^#1{%
+	\mathop{\mathrm{\mathstrut d}}%
+		\nolimits^{#1}\gobblespace}
+\def\gobblespace{%
+		\futurelet\diffarg\opspace}
+\def\opspace{%
+	\let\DiffSpace\!%
+	\ifx\diffarg(%
+		\let\DiffSpace\relax
+	\else
+		\ifx\diffarg[%
+			\let\DiffSpace\relax
+		\else
+			\ifx\diffarg\{%
+				\let\DiffSpace\relax
+			\fi\fi\fi\DiffSpace}
+\makeatother
+
+\NewDocumentCommand{\deriv}{D[]{}mm}{%
+    \frac{\diff^{#1}#2}{\diff#3^{#1}}}% --- derivative ---
+\NewDocumentCommand{\pderiv}{D[]{}mm}{%
+    \frac{\partial^{#1}#2}{\partial#3^{#1}}}% --- partial derivative ---
+
+% === BOXING ===
+
+% Require xcolor for highlighting
+\RequirePackage[svgnames,dvipsnames]{xcolor}
+
+% Define colors - modern palette
+\colorlet{highlight-color}{Gold!25}
+\colorlet{highlight-color-alt}{Gray!15}
+\colorlet{box-border}{Gray!40}
+
+\NewDocumentCommand\highlight{s O{} m}{%
+    % Define color (if empty, check if starred)
+    \colorlet{bg-color}{\ifblank{#2}{%
+        \IfBooleanTF#1{highlight-color}{highlight-color-alt}%
+    }{#2}}
+    % Check if in math mode or not
+    \relax\ifmmode% if in math mode
+        \mathchoice%
+        {\colorbox{bg-color}{$\displaystyle#3$}}%
+        {\colorbox{bg-color}{$\textstyle#3$}}%
+        {\colorbox{bg-color}{$\scriptstyle#3$}}%
+        {\colorbox{bg-color}{$\scriptscriptstyle#3$}}%
+    \else% not in math mode
+        \colorbox{bg-color}{#3}%
+    \fi}% --- \highlight*[<color>]{<stuff>} ---
+
+\NewDocumentEnvironment{highlightbox}{ D[]{} D<>{1} +b }{%
+    \colorbox{\ifblank{#1}{highlight-color-alt}{#1}}{%
+        \begin{minipage}{\dimexpr#2\linewidth-2\fboxsep\relax}%
+            \normalcolor#3%
+        \end{minipage}%
+    }}{}
+
+\NewDocumentEnvironment{highlightbox*}{ D[]{} D<>{1} +b }{%
+    \colorlet{bg-color}{\ifblank{#1}{highlight-color}{#1}}%
+    \begin{highlightbox}[bg-color]<#2>#3\end{highlightbox}%
+    }{}% --- \begin{highlightbox}[]<>...\end{highlightbox} ---
+
+% algorithm box
+\NewDocumentCommand{\algobox}{D[]{1} +m}{%
+    \fcolorbox{box-border}{highlight-color-alt}{%
+        \begin{minipage}{\dimexpr#1\linewidth-2\fboxsep-2\fboxrule\relax}%
+            #2%
+        \end{minipage}%
+    }%
+}
+
+% TODO box with styling
+\newcommand{\todo}[1]{\fcolorbox{red!60}{red!10}{%
+    \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}%
+        \textcolor{red!80}{\sffamily\bfseries TODO\ifblank{#1}{~}{:}} \normalcolor#1%
+    \end{minipage}%
+}}% --- TODO ---
+
+% Modern info box
+\NewDocumentCommand{\infobox}{D[]{} +m}{%
+    \fcolorbox{blue!40}{blue!5}{%
+        \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}%
+            \ifblank{#1}{}{\textcolor{blue!80}{\sffamily\bfseries #1:} }%
+            \normalcolor#2%
+        \end{minipage}%
+    }%
+}
+
+% === MODERN ADDITIONS ===
+
+% Machine learning specific commands
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\sigmoid}{sigmoid}
+\DeclareMathOperator{\ReLU}{ReLU}
+\DeclareMathOperator{\loss}{\mathcal{L}}
+
+% Optimization
+\DeclareMathOperator*{\minimize}{minimize}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator{\subjectto}{subject\,to}
+
+% Information theory
+\DeclareMathOperator{\entropy}{H}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\MI}{I} % Mutual information
+
+\endinput

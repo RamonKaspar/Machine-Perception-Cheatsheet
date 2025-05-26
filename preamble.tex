@@ -1,0 +1,162 @@
+% Language and encoding setup
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,ngerman]{babel}
+
+% Font setup - using modern, widely available fonts
+\usepackage{mathpazo} % Palatino for text and math (elegant serif)
+\usepackage[scaled=0.9]{helvet} % Helvetica for sans serif
+\usepackage[scaled=0.85]{beramono} % Bera Mono for typewriter
+\renewcommand{\familydefault}{\rmdefault}
+
+\usepackage{ebgaramond} % EB Garamond (classic elegance)
+
+% Flush left
+\usepackage[document]{ragged2e}
+
+% Set date format
+\usepackage[useregional=numeric]{datetime2}
+
+% Arithmetic / Coding package
+\usepackage{ifthen}
+\usepackage{calc}
+
+% Spacing
+\setlength\columnsep{7pt}% Column spacing for multicols
+\usepackage{setspace}\setstretch{0.9}
+% Move operators tighter together
+\thinmuskip=2mu                     % default: 3mu
+\medmuskip=3mu plus 1mu minus 3mu   % default: 4mu plus 2mu minus 4mu
+\thickmuskip=4mu plus 3mu minus 3mu % default: 5mu plus 5mu
+% Array and matrix spacing
+\setlength\arraycolsep{1pt}
+
+% Control (primitive) list items
+\usepackage{enumitem}
+\setlist{leftmargin=*,nosep,labelsep=2pt,parsep=-0.2pt}  % reduce spaces
+\setlist[itemize,2]{label=$\circ$}
+
+% Formatting
+\usepackage{multicol, multirow, tabularx}
+\usepackage{makecell}
+
+% Images
+\usepackage{graphicx}
+
+% Custom emphasizing
+\DeclareTextFontCommand{\emph}{\color{MediumOrchid}\bfseries\sffamily}
+
+% === FONTS ===
+
+% Font sizes for sections
+\setkomafont{section}{\normalsize}
+\setkomafont{subsection}{\normalsize}
+\setkomafont{subsubsection}{\normalsize}
+
+% Modern font scaling and spacing
+\usepackage{microtype} % Improved typography
+\microtypesetup{
+    protrusion=true,
+    expansion=true,
+    tracking=true,
+    kerning=true,
+    spacing=true
+}
+
+% === TITLE FORMAT ===
+
+\usepackage{titling}
+
+% Reduce default vertical space before and after
+\setlength{\droptitle}{-3em}
+\renewcommand{\maketitlehookd}{\vspace{-1.5em}}
+
+% Title
+\pretitle{\centering\sffamily\large\bfseries}
+\posttitle{\par}
+% Author
+\preauthor{\centering\sffamily\small\ifx\theauthor\empty{}\else{\;-\;}\fi}
+\postauthor{}
+% Date - remove spacing above and below
+\predate{\centering\sffamily\small\ifx\thedate\empty{}\else{\;-\;}\fi\itshape}
+\postdate{\ifx\thedate\empty{}\else{\par}\fi}
+
+% === SECTIONS FORMAT ===
+
+\usepackage[svgnames,dvipsnames]{xcolor}
+
+% Make spacing tight
+\RedeclareSectionCommands[%
+    runin=false,
+    beforeskip=0ex plus .5ex,
+    afterskip=0ex plus .1ex,
+]{section,subsection,subsubsection}
+
+% Define colors - modern color scheme
+\colorlet{section-color}{black!90}
+\colorlet{subsection-color}{black!40}
+\colorlet{subsubsection-color}{black!15}
+\colorlet{section-text-color}{white}
+\colorlet{subsection-text-color}{black}
+\colorlet{subsubsection-text-color}{black}
+
+% Alternative Blue theme:
+% \colorlet{section-color}{NavyBlue!90}
+% \colorlet{subsection-color}{NavyBlue!40}
+% \colorlet{subsubsection-color}{NavyBlue!15}
+
+% Put in colored box with fixed height
+\makeatletter
+\renewcommand\sectionlinesformat[4]{%
+    \colorbox{#1-color}{%
+        \begin{minipage}[b][.6em][t]{\dimexpr\linewidth-2\fboxsep\relax}
+            \vspace{-.3ex}%
+            \raggedsection\color{#1-text-color}\@hangfrom{#3}{#4}%
+            \vspace{-.3ex}%
+        \end{minipage}%
+}}
+\makeatother
+
+% === HEADERS AND FOOTERS ===
+
+\usepackage[footsepline]{scrlayer-scrpage}
+
+\pagestyle{plain.scrheadings}
+
+% Clear and set styles
+\clearpairofpagestyles
+\setkomafont{pageheadfoot}{\color{gray}\sffamily}
+
+% Reset pagination format
+\setkomafont{pagination}{}
+
+% === COLOR STYLING ===
+\everymath\expandafter{\the\everymath\color{MediumBlue}}
+
+% === MODERN ADDITIONS ===
+
+% Enhanced table styling
+\usepackage{booktabs}
+\usepackage{array}
+
+% Better spacing in equations
+\usepackage{mathtools}
+
+% Modern bibliography
+% \usepackage[style=numeric-comp,sorting=none,backend=biber]{biblatex}
+
+% Improved hyperlinks (for digital versions)
+\usepackage[
+    colorlinks=true,
+    linkcolor=NavyBlue,
+    citecolor=NavyBlue,
+    urlcolor=NavyBlue,
+    pdftitle={AML Cheat Sheet},
+    pdfauthor={},
+    pdfsubject={Machine Learning Reference},
+    pdfkeywords={machine learning, cheat sheet}
+]{hyperref}
+
+% Ensure compatibility
+\usepackage{etoolbox}
+\robustify\emph
