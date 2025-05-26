@@ -1,0 +1,82 @@
+\section{Recurrent Neural Networks}
+
+\highlight{$\mathbf{h}_t = f(\mathbf{h}_{t-1}, \mathbf{x}_t; \mathbf{W})$, $\hat{\mathbf{y}}_t = \mathbf{W}_{hy} \mathbf{h}_t$}
+
+\textbf{Vanilla RNN:} \highlight{$\mathbf{h}_t = \tanh(\mathbf{W}_{hh} \mathbf{h}_{t-1} + \mathbf{W}_{xh} \mathbf{x}_t)$}
+
+\textbf{Loss Function:} $L = \sum_t L_t = \sum_t L(\mathbf{y}_t, \hat{\mathbf{y}}_t)$
+
+\textbf{Classification:}
+$\text{softmax}(\mathbf{o}_t)_k = \frac{e^{o_{t,k}}}{\sum_{j=1}^K e^{o_{t,j}}} =: \hat{y}_{t,k}$ 
+
+$\Rightarrow$ \textit{CE Loss:} $L_t = -\sum_k y_{t,k} \log \hat{y}_{t,k}$ (for one-hot $\mathbf{y}_t$)
+
+\textbf{Use Cases:} $1 \to 1$: POS tagging; $1 \to N$: Image captioning; $N \to 1$: Sentiment classification; $N \to N$: Machine translation
+
+
+\subsection{Backpropagation Through Time (BPTT)}
+
+$\frac{\partial L}{\partial W} = \sum_t \frac{\partial L_t}{\partial \mathbf{W}} \quad$ 
+\highlight{$\frac{\partial L_t}{\partial \mathbf{W}} = \sum_{k=1}^t \frac{\partial L_t}{\partial \hat{\mathbf{y}}_t} \frac{\partial \hat{\mathbf{y}}_t}{\partial \mathbf{h}_t} \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} \frac{\partial^+ \mathbf{h}_k}{\partial \mathbf{W}}$}
+
+$\frac{\partial \mathbf{h}_t}{\partial \mathbf{W}} = \frac{\partial^+ \mathbf{h}_t}{\partial \mathbf{W}} + \sum_{k=1}^{t-1} \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} \frac{\partial^+ \mathbf{h}_k}{\partial \mathbf{W}}$
+
+\textbf{Chain Rule Term:} $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k+1}^t \frac{\partial \mathbf{h}_i}{\partial \mathbf{h}_{i-1}} = \prod_{i=k+1}^t \mathbf{W}_{hh}^T \text{diag}[f'(\mathbf{h}_{i-1})]$
+
+For Elman RNN: $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k+1}^t \text{diag}(1 - \mathbf{h}_i^2) \mathbf{W}_{hh}$
+
+\textbf{Recursive Formulation:}
+$\frac{\partial L}{\partial \mathbf{h}_t} = \frac{\partial L_t}{\partial \mathbf{h}_t} + \frac{\partial L}{\partial \mathbf{h}_{t+1}} \frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t}$
+
+\textbf{Key Gradients:} $\frac{\partial L_t}{\partial \mathbf{o}_t} = \hat{\mathbf{y}}_t - \mathbf{y}_t$ (for cross-entropy loss); $\frac{\partial \mathbf{o}_t}{\partial \mathbf{h}_t} = \mathbf{V}$ (linear output layer); $\frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t} = \text{diag}(1 - \mathbf{h}_{t+1}^2) \mathbf{W}_{hh}$ (for tanh)
+
+\subsection{Gradient Vanishing/Exploding}
+
+\textbf{Mathematical Analysis:} If $\mathbf{W}_{hh}$ is diagonalizable: $\mathbf{W}_{hh} = \mathbf{Q} \boldsymbol{\Lambda} \mathbf{Q}^T$
+Then: $\mathbf{h}_t = (\mathbf{Q} \boldsymbol{\Lambda}^t \mathbf{Q}^T) \mathbf{h}_1$ $\Rightarrow$ $\mathbf{h}_t$ becomes dominant eigenvector. 
+\textbf{Condition:} Let $\lambda_1 = \max \lambda(\mathbf{W}_{hh})$, $\gamma > \|\text{diag}(f'(\mathbf{h}_{i-1}))\|$
+\begin{itemize}
+    \item If $\lambda_1 > \gamma^{-1}$: gradients \textbf{explode}
+    \item If $\lambda_1 < \gamma^{-1}$: gradients \textbf{vanish}
+\end{itemize}
+
+\textbf{Problems:} (1) Training instabilities (NaN/$\infty$), (2) Hard to capture long-term dependencies, (3) Large gradients jump over local minima
+
+\subsection{Solutions to Gradient Problems}
+
+\textbf{Truncated BPTT:} Limit sum to last $\kappa$ steps to reduce computational cost: {\footnotesize $\frac{\partial L_t}{\partial \mathbf{W}} \approx \sum_{k=t-\kappa}^t \frac{\partial L_t}{\partial \hat{\mathbf{y}}_t} \frac{\partial \hat{\mathbf{y}}_t}{\partial \mathbf{h}_t} \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} \frac{\partial^+ \mathbf{h}_k}{\partial \mathbf{W}}$}
+
+\textbf{Gradient Clipping:} 
+{
+\footnotesize
+$\theta \leftarrow 
+\begin{cases}
+\theta - \eta \mathbf{g}, & \|\mathbf{g}\| \leq k \\
+\theta - \eta \frac{k}{\|\mathbf{g}\|} \mathbf{g}, & \text{otherwise}
+\end{cases}$
+}
+
+\textbf{Leaky Unit:} Constant error flow to solve vanishing gradient: {\small $\hat{\mathbf{h}}_t = f_{\mathbf{\theta}}(\mathbf{h}_{t-1}, \mathbf{x}_t)$, $\mathbf{h}_t = \alpha \mathbf{h}_{t-1} + (1-\alpha) \hat{\mathbf{h}}_t$ }
+
+\subsection{Long Short-Term Memory (LSTM)}
+
+\textbf{Key Idea:} Constant error flow through cell state, protected by gates
+
+{ \footnotesize
+\highlight{$\begin{pmatrix} \mathbf{i} \\ \mathbf{f} \\ \mathbf{o} \\ \mathbf{g} \end{pmatrix} = \begin{pmatrix} \sigma \\ \sigma \\ \sigma \\ \tanh \end{pmatrix} \mathbf{W} \begin{pmatrix} \mathbf{x}_t \\ \mathbf{h}_{t-1} \end{pmatrix}$}
+
+\highlight{$\mathbf{c}_t = \mathbf{f} \odot \mathbf{c}_{t-1} + \mathbf{i} \odot \mathbf{g}$}
+\highlight{$\mathbf{h}_t = \mathbf{o} \odot \tanh(\mathbf{c}_t)$}
+}
+
+Where $\mathbf{W} \in \R^{4n \times 2n}$ (concatenated weight matrix), $\mathbf{i}, \mathbf{f}, \mathbf{o} \in [0,1]$, gate $\mathbf{g} \in \R$
+
+
+\begin{itemize}
+    \item \textbf{Input gate} $\mathbf{i}$: Which values to write to cell state
+    \item \textbf{Forget gate} $\mathbf{f}$: What to forget (reset)
+    \item \textbf{Output gate} $\mathbf{o}$: Which values to read from cell state to hidden state
+    \item \textbf{Gate gate} $\mathbf{g}$: Candidate values to write to cell state
+\end{itemize}
+
+\textbf{Information Highway:} Gates form pathway for easy error propagation through minimal modifications to cell state, solving vanishing gradient problem
