@@ -1,0 +1,101 @@
+\section{Convolutional Neural Networks}
+
+\textbf{Neural Findings:} (1) Rapid Serial Visual Presentation (RSVP), (2) Hubel \& Wiesel receptive fields, (3) HMAX model with simple/complex cells
+
+\textbf{Historical Models:} Neurocognitron, LeNet-5.
+
+\textbf{Image Filtering:} Modify pixels in image based on some function of a local neighborhood of pixels.
+
+\textbf{Three Key Properties:}\\
+(1) \textbf{Linear:} $T(\alpha \mathbf{u} + \beta \mathbf{v}) = \alpha T(\mathbf{u}) + \beta T(\mathbf{v})$\\
+(2) \textbf{Translation Invariant:} $T(f(\mathbf{u})) = T(\mathbf{u})$ \\
+(3) \textbf{Translation Equivariant:} $T(f(\mathbf{u})) = f(T(\mathbf{u}))$
+
+\begin{highlightbox*}[gray!30]
+Any linear, shift-equivariant transform can be written as a convolution
+\end{highlightbox*}
+
+\textbf{Key Advantages over Fully Connected:}
+\begin{itemize}
+    \item \textbf{Parameter sharing:} Same weights reused across spatial locations
+    \item \textbf{Local connectivity:} Each neuron connects only to local region, not all inputs
+\end{itemize}
+
+\subsection{Convolution Operations}
+
+\textbf{Correlation ($\star$)} (template matching):
+\highlight{$\mathbf{I}'(i,j) = \sum_{m=-k}^k \sum_{n=-k}^k \mathbf{K}(m,n) \mathbf{I}(i+m, j+n)$}
+
+\textbf{Convolution ($*$):} $K \in \R^{M \times N}$, $k=\text{floor}(M/2)$
+{\small
+\highlight{$\mathbf{I}'(i,j) = \sum_{m,n=-k}^k \sum_{n=-k}^k \mathbf{K}(\textcolor{red}{-}m,\textcolor{red}{-}n) \mathbf{I}(i+m, j+n)$}
+}
+
+% \vspace{-1mm}
+% {\small
+% $$\mathbf{K} * \mathbf{I} = \begin{bmatrix}
+% k_1 & 0 & \cdots & 0 \\
+% k_2 & k_1 & \cdots & 0 \\
+% k_3 & k_2 & k_1 & 0 \\
+% \vdots & \vdots & \ddots & \vdots \\
+% 0 & \cdots & k_2 & k_1
+% \end{bmatrix} \begin{bmatrix} I_1 \\ I_2 \\ \vdots \\ I_n \end{bmatrix}$$
+% }
+
+\begin{highlightbox*}[gray!30]
+Convolution = Correlation iff $\mathbf{K}(i,j) = \mathbf{K}(-i,-j)$ (kernel is symmetric)
+\end{highlightbox*}
+
+
+% {\small \textbf{CNN-Layer (Multi-channel):}
+% $z_j^{(l)} = \sum_{k=1}^{C_{\text{in}}} w_{k,j}^{(l)} * z_k^{(l-1)} + b_j, \quad j \in [C_{\text{out}}]$}
+
+\textbf{Forward Pass:} $z_{i,j}^{(l)} = w^{(l)} * z^{(l-1)}(i,j) + b = \sum_m \sum_n w_{m,n}^{(l)} z_{i-m,j-n}^{(l-1)} + b$
+
+\textbf{Backpropagation:}\\
+{\small
+Backward on inputs $z$: $\delta_{i,j}^{(l-1)} = \frac{\partial \mathcal{L}}{\partial z_{i,j}^{(l-1)}} = \sum_{i',j'} \delta_{i',j'}^{(l)} w_{i'-i,j'-j}^{(l)} = \delta^{(l)} * \text{FLIP}(w^{(l)})$\\
+Backward on weights $w$: $\frac{\partial \mathcal{L}}{\partial w_{m,n}^{(l)}} = \sum_{i',j'} \delta_{i',j'}^{(l)} z_{i'-m,j'-n}^{(l-1)} = \delta^{(l)} * \text{FLIP}(z^{(l-1)})$
+}
+
+\highlight{$L_{\text{out}} = \left\lfloor \frac{L_{\text{in}} + 2 \cdot \text{Pad} - \text{Dilation} \cdot (\text{Kernel} - 1) - 1}{\text{Stride}} + 1 \right\rfloor$}
+
+\textbf{Parameter Count:} $(k^2 \cdot C_{\text{in}} + 1) \cdot C_{\text{out}}$\\
+\textbf{Connections per neuron:} $3k^2$ (for RGB input)
+
+
+\subsection{Pooling Operations}
+
+\textbf{Max Pooling:} 
+Forward: $z^{(l)} = \max\{z^{(l-1)_i}$\\
+Backward: $\frac{\partial z^{(l)}}{\partial z^{(l-1)}_i} = \1_{\{i = i^*\}}$ and
+$\delta^{(l-1)}=\{ \delta^{(l)}\}_{i^*}$ with {\small $i^* = \text{a max}_i\{ z^{(l-1)}_i \}$}
+
+\textbf{Goals:} (1) Increase receptive field exponentially, (2) Noise robustness, (3) Translation invariance
+
+\textbf{Strided Convolutions:} Skip pixels when sliding kernel (stride > 1). Reduces spatial dimensions without pooling. More efficient alternative to conv + pool for downsampling.
+
+\textbf{Dilated Convolutions:} Insert gaps between kernel elements. Increases receptive field without adding parameters or reducing resolution. Preserves spatial detail while capturing wider context.
+
+\subsection{Famous CNN Architectures}
+
+\textbf{AlexNet:} Smaller filters, more layers, ReLU activation, dropout. \textbf{VGG:} Depper, more params \\
+\textbf{GoogLeNet:} Inception modules, 1×1 convs for dimension reduction, auxiliary classification heads\\
+\textbf{ResNet:} Residual connections $\mathbf{h}_{l+1} = f(\mathbf{h}_l) + \mathbf{h}_l$
+Advantages: (1) Better convergence, (2) Propagate high-frequency information
+
+\subsection{Fully Convolutional Networks (FCNN)}
+
+\textbf{Applications:} Semantic segmentation, image-to-image translation, human pose estimation
+
+\textbf{Strategy:} \textit{Downsample} with convolutions/pooling, then \textit{upsample} to original resolution
+
+\textbf{Upsampling Methods:}
+\begin{itemize}
+    \item \textbf{Nearest Neighbor:} Duplicate values into corresponding cells
+    \item \textbf{Bed of Nails:} Place value top-left, fill rest with $0$'s
+    \item \textbf{Max Unpooling:} Remember positions from max-pooling, place values back
+    \item - \textbf{Strided Upconvolution or Transposed Conv} \textit{(learned!)}:  Insert $(s-1)$ zeros between pixels, $(k-p-1)$ padding, then convolve. Transposed Convolution Output Size: $L_{\text{out}} = (L_{\text{in}} - 1) \cdot \text{Stride} - 2 \cdot \text{Pad} + \text{Dilation} \cdot (\text{Kernel} - 1) + \text{OutPad} + 1$
+\end{itemize}
+
+\textbf{U-Net:} Skip connections between corresponding down/upsampling layers; Combines global context (from skip connections) with local information (from previous layer); Essential for preserving fine-grained spatial information.
