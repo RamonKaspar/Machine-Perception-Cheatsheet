@@ -1,0 +1,135 @@
+\section{Generative Adversarial Networks (GANs)}
+
+Two failure modes for Likelihood-based Models:
+\begin{itemize}
+    \item \textbf{High likelihood, poor quality:} Mixing with noise barely affects likelihood. E.g., let $p$ be a good model, $q$ be noise. Then $0.01p + 0.99q$ has likelihood: $\log(0.01p(\mathbf{x}) + 0.99q(\mathbf{x})) \geq \log p(\mathbf{x}) - \log 100$
+    \item \textbf{Low likelihood, good quality:} Overfitting gives sharp peaks on training data
+\end{itemize}
+
+\textbf{GAN Solution:} Two-player adversarial game
+\begin{itemize}
+    \item \textbf{Generator:} $G: \R^Q \to \R^D$ (noise $\mathbf{z}$ to data $\mathbf{x}$)
+    \item \textbf{Discriminator:} $D: \R^D \to [0,1]$ (real vs. fake)
+\end{itemize}
+
+\begin{highlightbox*}[gray!30]
+\footnotesize
+$$\min_G \max_D V(G,D) = \E[p_{\text{data}}]{\log D(\mathbf{x})} + \E[p_z]{\log(1 - D(G(\mathbf{z})))}$$
+\end{highlightbox*}
+
+We train with \textit{alternating optimization} (aim is to keep $D$ near optimum and $G$ changes only slowly):
+
+\begin{highlightbox*}[gray!30]
+\footnotesize
+\emph{GAN Training Algorithm:}\\
+\textbf{While} not converged \textbf{do}\\
+\quad 1. Freeze $G$, \textbf{for} $k$ steps \textbf{do}:\\
+\quad\quad i. Draw $N$ samples $\{\mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(N)}\}$ from $p_{\text{data}}(\mathbf{x})$\\
+\quad\quad ii. Draw $N$ samples $\{\mathbf{z}^{(1)}, \ldots, \mathbf{z}^{(N)}\}$ from $p(\mathbf{z})$\\
+\quad\quad iii. Update $D$ by ascending: \\
+\quad\quad\quad  $\nabla_{\theta_D} \frac{1}{N} \sum_{i=1}^N [\log D(\mathbf{x}^{(i)}) + \log(1 - D(G(\mathbf{z}^{(i)})))]$\\
+\quad 2. Freeze $D$, draw $N$ samples $\{\mathbf{z}^{(1)}, \ldots, \mathbf{z}^{(N)}\}$ from $p(\mathbf{z})$\\
+\quad 3. Update $G$ by descending: \\
+\quad\quad $\nabla_{\theta_G} \frac{1}{N} \sum_{i=1}^N \log(1 - D(G(\mathbf{z}^{(i)})))$\\
+(Or ascending: $\nabla_{\theta_G} \frac{1}{N} \sum_{i=1}^N \log(D(G(\mathbf{z}^{(i)})))$ avoid saturat.)
+\end{highlightbox*}
+
+\textbf{Optimal Discriminator:} $D^*(\mathbf{x}) = \frac{p_{\text{data}}(\mathbf{x})}{p_{\text{data}}(\mathbf{x}) + p_{\text{model}}(\mathbf{x})}$
+
+\textbf{Jensen-Shannon Divergence:} $\text{JS}(p \parallel q) = \frac{1}{2}\KL\left(p \parallel \frac{p+q}{2}\right) + \frac{1}{2}\KL\left(q \parallel \frac{p+q}{2}\right)$ (symmetric!)
+
+\highlight{$V(G, D^*) = -\log 4 + 2 \cdot \text{JS}(p_{\text{data}} \parallel p_{\text{model}})$}
+
+\textbf{Global Opt.:} \highlight{\footnotesize $p_{\text{data}} \equiv p_{\text{model}} \Rightarrow V(G^*, D^*) = -\log 4$}
+
+\textbf{Convergence Guarantee:} If $G$ and $D$ have sufficient capacity, at each step $D \to D^*$, and $p_{\text{model}}$ improves:
+$V(D^*, p_{\text{model}}) \propto \sup_D \int p_{\text{model}}(\mathbf{x}) \log(1 - D(\mathbf{x})) d\mathbf{x}$.
+Since $V(D^*, p_{\text{model}})$ is convex in $p_{\text{model}}$, global optimum is achievable. In Reality: Assumptions too strong - finite capacity networks, $D$ doesn't reach $D^*$, non-convex objectives.
+
+
+\subsection{Training Challenges \& Solutions}
+
+\textbf{1. Gradient Saturation:} Early in training, $D(G(\mathbf{z})) \approx 0 \Rightarrow \log(1-D(G(\mathbf{z})))$ saturates. $\Rightarrow$ \textbf{Solution:} Use gradient ascent on $\max_G \E[p_z]{\log D(G(\mathbf{z}))}$ instead
+
+\textbf{2. Mode Collapse:} Generator produces limited diversity, only high-quality samples from few modes. $\Rightarrow$ \textbf{Solution:} Unrolled GAN - optimize $G$ w.r.t. last $k$ discriminators
+
+\textbf{3. Training Instability:} Two-player games hard to optimize, finding Nash equilibria difficult $\Rightarrow$ \textbf{Solution:} Add gradient penalty: 
+{ \footnotesize
+$V(G,D) = \E[x \sim p_d]{\log D(\mathbf{x}) - \textcolor{red}{\lambda \|\nabla_x D(\mathbf{x})\|^2}} + \E[x \sim p_m]{\log(1 - D(G(\mathbf{z})))}$}
+
+\subsection{GAN Variants \& Improvements}
+
+% \textbf{Wasserstein GAN (WGAN):} Uses Wasserstein distance instead of JS divergence
+% - Gradients don't vanish for disjoint supports
+% - More stable training
+% - \textbf{Gradient Penalty:} Add  for stability
+
+% \textbf{DCGAN:} Architecture improvements
+% - Replace pooling with strided convolutions
+% - Batch normalization, no fully connected layers
+% - ReLU for generator, LeakyReLU for discriminator
+
+\textbf{Progressive GAN:} Grow generator and discriminator resolution by adding layers during training
+
+\emph{Feature Modulation:} Control image generation by modulating intermediate feature maps. 
+% \textbf{Affine Transformation:} {\small$\mathbf{c}' = \gamma(\mathbf{s}) \odot \mathbf{c} + \beta(\mathbf{s})$}. Style vector $\mathbf{s}$ processed by MLPs to produce scale $\gamma$ and shift $\beta$ parameters. Applied element-wise to feature maps $\mathbf{c}$.
+\textbf{AdaIN:} (Instance Normalization + Feature Modulation) {\footnotesize$\mathbf{c}' = \gamma(\mathbf{s}) \odot \frac{\mathbf{c} - \mu(\mathbf{c})}{\sigma(\mathbf{c})} + \beta(\mathbf{s})$}. First normalize features, then apply affine transformation. Transfer style statistics from style vector to content features.
+
+\emph{StyleGAN:} Layer-wise style conditioning.
+\textbf{Mapping Network:} $\mathbf{z} \in \mathcal{Z} \to \mathbf{w} \in \mathcal{W}$ (intermediate latent space).
+\textbf{Style Injection:} AdaIN with different $\mathbf{s}_i$ at each resolution + per-layer noise $\boldsymbol{\varepsilon}_i$. Better disentanglement than standard GAN.
+
+
+\subsection{Conditional GANs \& Applications}
+
+\emph{Pix2Pix (Paired Translation):} E.g., sketch $X \to$ image $Y$, then: $G : X \to Y, D: X,Y \to [0,1]$.
+
+$\mathcal{L}(G,D) = \mathcal{L}_{\text{cGAN}}(G,D) + \lambda \mathcal{L}_{L1}(G)$
+
+{\scriptsize
+$\mathcal{L}_{\text{cGAN}}(G,D) = \E[\mathbf{x},\mathbf{y}]{\log D(\mathbf{x},\mathbf{y})} + \E[\mathbf{x},\mathbf{z}]{\log(1-D(\mathbf{x},G(\mathbf{x},\mathbf{z})))}$
+
+$\mathcal{L}_{L1}(G) = \E[\mathbf{x},\mathbf{y},\mathbf{z}]{\|\mathbf{y} - G(\mathbf{x},\mathbf{z})\|_1}$}
+
+\textbf{Limitations:} Required paired images as train data, maps to unique output.
+
+\emph{CycleGAN (Unpaired Translation):} Two conditional GANs with cycle consistency
+$\mathcal{L}(G,F,D_X,D_Y) = \mathcal{L}_{\text{GAN}}(G,D_Y,X,Y) + \mathcal{L}_{\text{GAN}}(F,D_X,Y,X) + \lambda \mathcal{L}_{\text{cyc}}(G,F)$
+
+{\footnotesize
+$\mathcal{L}_{\text{cyc}}(G,F) = \E[\mathbf{x}]{\|F(G(\mathbf{x})) - \mathbf{x}\|_1} + \E[\mathbf{y}]{\|G(F(\mathbf{y})) - \mathbf{y}\|_1}$}
+
+\emph{Vid2vid:} Video-to-video translation extending pix2pix to temporal domain (with temporal discriminator and optical flow for consistency)
+
+\emph{BicycleGAN:} Addresses mode collapse in pix2pix by enforcing bidirectional consistency, Bidirectional mapping (cVAE-GAN + cLR-GAN losses) for diverse outputs from same input.
+
+% \textbf{Vid2vid:} Video-to-video translation extending pix2pix to temporal domain
+% - \textbf{Temporal consistency:} Add temporal discriminator and flow-based warping loss
+% - \textbf{Multi-scale architecture:} Coarse-to-fine generation for high resolution
+% - \textbf{Flow estimation:} Optical flow between consecutive frames for temporal coherence
+
+% \textbf{BicycleGAN:} 
+% - \textbf{Problem:} Pix2pix ignores noise input $\mathbf{z}$, produces deterministic output
+% - \textbf{Solution:} Bidirectional mapping between latent codes and outputs
+% - \textbf{Losses:} cVAE-GAN loss (encode output to latent) + cLR-GAN loss (encode latent to output)
+% - Ensures diverse, multimodal outputs for same input
+
+\subsection{3D GANs}
+
+\textbf{3D GAN:} Voxel-based 3D generation (comp. exp.)
+
+\textbf{PlatonicGAN:} 2D input → 3D output → differentiable 2D rendering for discriminator
+
+\textbf{HoloGAN:} 3D GAN + 2D super-resolution GAN
+
+% \textbf{GRAF:} Neural radiance fields (more efficient than voxels)
+
+% \textbf{GIRAFFE:} GRAF + 2D convolutional upsampling
+
+\textbf{EG3D:} Tri-plane representation (uses $O(N^2)$ instead of $O(N^3)$ for voxel) to project 3D points to three 2D feature planes (from StyleGAN).
+
+\subsection{Advantages \& Limitations}
+
+\textbf{Pros:} High expressiveness and flexibility; No explicit density modeling required; Often produces realistic samples; Efficient sampling (single forward pass)
+
+\textbf{Cons:} No explicit likelihood computation; Training instability and mode collapse; Difficult to evaluate and compare models; Requires careful balancing of generator and discriminator
