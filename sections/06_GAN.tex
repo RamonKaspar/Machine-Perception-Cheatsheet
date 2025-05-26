@@ -12,10 +12,11 @@ Two failure modes for Likelihood-based Models:
     \item \textbf{Discriminator:} $D: \R^D \to [0,1]$ (real vs. fake)
 \end{itemize}
 
-\begin{highlightbox*}[gray!30]
-\footnotesize
-$$\min_G \max_D V(G,D) = \E[p_{\text{data}}]{\log D(\mathbf{x})} + \E[p_z]{\log(1 - D(G(\mathbf{z})))}$$
-\end{highlightbox*}
+% \begin{highlightbox*}[gray!30]
+\highlight{
+\scriptsize
+$\min_G \max_D V(G,D) = \E[p_{\text{data}}]{\log D(\mathbf{x})} + \E[p_z]{\log(1 - D(G(\mathbf{z})))}$}
+% \end{highlightbox*}
 
 We train with \textit{alternating optimization} (aim is to keep $D$ near optimum and $G$ changes only slowly):
 
@@ -36,9 +37,9 @@ We train with \textit{alternating optimization} (aim is to keep $D$ near optimum
 
 \textbf{Optimal Discriminator:} $D^*(\mathbf{x}) = \frac{p_{\text{data}}(\mathbf{x})}{p_{\text{data}}(\mathbf{x}) + p_{\text{model}}(\mathbf{x})}$
 
-\textbf{Jensen-Shannon Divergence:} $\text{JS}(p \parallel q) = \frac{1}{2}\KL\left(p \parallel \frac{p+q}{2}\right) + \frac{1}{2}\KL\left(q \parallel \frac{p+q}{2}\right)$ (symmetric!)
+\textbf{Jensen-Shannon Divergence:} {\small$\text{JS}(p \parallel q) = \frac{1}{2}\KL\left(p \parallel \frac{p+q}{2}\right) + \frac{1}{2}\KL\left(q \parallel \frac{p+q}{2}\right)$ (symmetric!)}
 
-\highlight{$V(G, D^*) = -\log 4 + 2 \cdot \text{JS}(p_{\text{data}} \parallel p_{\text{model}})$}
+\highlight{\small $V(G, D^*) = -\log 4 + 2 \cdot \text{JS}(p_{\text{data}} \parallel p_{\text{model}})$}
 
 \textbf{Global Opt.:} \highlight{\footnotesize $p_{\text{data}} \equiv p_{\text{model}} \Rightarrow V(G^*, D^*) = -\log 4$}
 
@@ -51,9 +52,9 @@ Since $V(D^*, p_{\text{model}})$ is convex in $p_{\text{model}}$, global optimum
 
 \textbf{1. Gradient Saturation:} Early in training, $D(G(\mathbf{z})) \approx 0 \Rightarrow \log(1-D(G(\mathbf{z})))$ saturates. $\Rightarrow$ \textbf{Solution:} Use gradient ascent on $\max_G \E[p_z]{\log D(G(\mathbf{z}))}$ instead
 
-\textbf{2. Mode Collapse:} Generator produces limited diversity, only high-quality samples from few modes. $\Rightarrow$ \textbf{Solution:} Unrolled GAN - optimize $G$ w.r.t. last $k$ discriminators
+\textbf{2. Mode Collapse:} Generator produces limited diversity, only high-quality samples from few modes. $\Rightarrow$ \textbf{Sol:} Unrolled GAN (optimize $G$ w.r.t. last $k$ discr.)
 
-\textbf{3. Training Instability:} Two-player games hard to optimize, finding Nash equilibria difficult $\Rightarrow$ \textbf{Solution:} Add gradient penalty: 
+\textbf{3. Training Instability:} Two-player games hard to optimize, finding Nash equilibria difficult $\Rightarrow$ \textbf{Sol:} Gradient penalty: 
 { \footnotesize
 $V(G,D) = \E[x \sim p_d]{\log D(\mathbf{x}) - \textcolor{red}{\lambda \|\nabla_x D(\mathbf{x})\|^2}} + \E[x \sim p_m]{\log(1 - D(G(\mathbf{z})))}$}
 
@@ -82,15 +83,15 @@ $V(G,D) = \E[x \sim p_d]{\log D(\mathbf{x}) - \textcolor{red}{\lambda \|\nabla_x
 
 \subsection{Conditional GANs \& Applications}
 
-\emph{Pix2Pix (Paired Translation):} E.g., sketch $X \to$ image $Y$, then: $G : X \to Y, D: X,Y \to [0,1]$.
+\emph{Pix2Pix (Paired Translation):} sketch $X \to$ img $Y$
+% , then: $G : X \to Y, D: X,Y \to [0,1]$.
 
 $\mathcal{L}(G,D) = \mathcal{L}_{\text{cGAN}}(G,D) + \lambda \mathcal{L}_{L1}(G)$
 
 {\scriptsize
 $\mathcal{L}_{\text{cGAN}}(G,D) = \E[\mathbf{x},\mathbf{y}]{\log D(\mathbf{x},\mathbf{y})} + \E[\mathbf{x},\mathbf{z}]{\log(1-D(\mathbf{x},G(\mathbf{x},\mathbf{z})))}$
 
-$\mathcal{L}_{L1}(G) = \E[\mathbf{x},\mathbf{y},\mathbf{z}]{\|\mathbf{y} - G(\mathbf{x},\mathbf{z})\|_1}$}
-
+$\mathcal{L}_{L1}(G) = \E[\mathbf{x},\mathbf{y},\mathbf{z}]{\|\mathbf{y} - G(\mathbf{x},\mathbf{z})\|_1} \quad$}
 \textbf{Limitations:} Required paired images as train data, maps to unique output.
 
 \emph{CycleGAN (Unpaired Translation):} Two conditional GANs with cycle consistency
@@ -101,7 +102,7 @@ $\mathcal{L}_{\text{cyc}}(G,F) = \E[\mathbf{x}]{\|F(G(\mathbf{x})) - \mathbf{x}\
 
 \emph{Vid2vid:} Video-to-video translation extending pix2pix to temporal domain (with temporal discriminator and optical flow for consistency)
 
-\emph{BicycleGAN:} Addresses mode collapse in pix2pix by enforcing bidirectional consistency, Bidirectional mapping (cVAE-GAN + cLR-GAN losses) for diverse outputs from same input.
+\emph{BicycleGAN:} Addresses mode collapse in pix2pix by enforcing bidir. consistency (cVAE-GAN + cLR-GAN losses) for diverse outputs from same input.
 
 % \textbf{Vid2vid:} Video-to-video translation extending pix2pix to temporal domain
 % - \textbf{Temporal consistency:} Add temporal discriminator and flow-based warping loss
@@ -114,9 +115,7 @@ $\mathcal{L}_{\text{cyc}}(G,F) = \E[\mathbf{x}]{\|F(G(\mathbf{x})) - \mathbf{x}\
 % - \textbf{Losses:} cVAE-GAN loss (encode output to latent) + cLR-GAN loss (encode latent to output)
 % - Ensures diverse, multimodal outputs for same input
 
-\subsection{3D GANs}
-
-\textbf{3D GAN:} Voxel-based 3D generation (comp. exp.)
+\subsection{3D GANs \quad {\scriptsize(Voxel-based 3D generation)}}
 
 \textbf{PlatonicGAN:} 2D input → 3D output → differentiable 2D rendering for discriminator
 

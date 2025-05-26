@@ -48,10 +48,9 @@ Convolution = Correlation iff $\mathbf{K}(i,j) = \mathbf{K}(-i,-j)$ (kernel is s
 
 \textbf{Forward Pass:} $z_{i,j}^{(l)} = w^{(l)} * z^{(l-1)}(i,j) + b = \sum_m \sum_n w_{m,n}^{(l)} z_{i-m,j-n}^{(l-1)} + b$
 
-\textbf{Backpropagation:}\\
 {\small
-Backward on inputs $z$: $\delta_{i,j}^{(l-1)} = \frac{\partial \mathcal{L}}{\partial z_{i,j}^{(l-1)}} = \sum_{i',j'} \delta_{i',j'}^{(l)} w_{i'-i,j'-j}^{(l)} = \delta^{(l)} * \text{FLIP}(w^{(l)})$\\
-Backward on weights $w$: $\frac{\partial \mathcal{L}}{\partial w_{m,n}^{(l)}} = \sum_{i',j'} \delta_{i',j'}^{(l)} z_{i'-m,j'-n}^{(l-1)} = \delta^{(l)} * \text{FLIP}(z^{(l-1)})$
+\textbf{Backprop on inputs} $z$: $\delta_{i,j}^{(l-1)} = \frac{\partial \mathcal{L}}{\partial z_{i,j}^{(l-1)}} = \sum_{i',j'} \delta_{i',j'}^{(l)} w_{i'-i,j'-j}^{(l)} = \delta^{(l)} * \text{FLIP}(w^{(l)})$\\
+\textbf{Backprop on weights} $w$: $\frac{\partial \mathcal{L}}{\partial w_{m,n}^{(l)}} = \sum_{i',j'} \delta_{i',j'}^{(l)} z_{i'-m,j'-n}^{(l-1)} = \delta^{(l)} * \text{FLIP}(z^{(l-1)})$
 }
 
 \highlight{$L_{\text{out}} = \left\lfloor \frac{L_{\text{in}} + 2 \cdot \text{Pad} - \text{Dilation} \cdot (\text{Kernel} - 1) - 1}{\text{Stride}} + 1 \right\rfloor$}
@@ -78,7 +77,7 @@ $\delta^{(l-1)}=\{ \delta^{(l)}\}_{i^*}$ with {\small $i^* = \text{a max}_i\{ z^
 \textbf{AlexNet:} Smaller filters, more layers, ReLU activation, dropout. \textbf{VGG:} Depper, more params \\
 \textbf{GoogLeNet:} Inception modules, 1×1 convs for dimension reduction, auxiliary classification heads\\
 \textbf{ResNet:} Residual connections $\mathbf{h}_{l+1} = f(\mathbf{h}_l) + \mathbf{h}_l$
-Advantages: (1) Better convergence, (2) Propagate high-frequency information
+(1) Better convergence, (2) Propagate high-freq. info
 
 \subsection{Fully Convolutional Networks (FCNN)}
 
@@ -88,10 +87,10 @@ Advantages: (1) Better convergence, (2) Propagate high-frequency information
 
 \emph{Upsampling Methods:}
 \begin{itemize}
-    \item \textbf{Nearest Neighbor:} Duplicate values into corresponding cells
+    \item \textbf{Nearest Neighbor:} Duplicate values
     \item \textbf{Bed of Nails:} Place value top-left, fill rest with $0$'s
     \item \textbf{Max Unpooling:} Remember positions from max-pooling, place values back
-    \item - \textbf{Strided Upconvolution or Transposed Conv} \textit{(learned!)}:  Insert $(s-1)$ zeros between pixels, $(k-p-1)$ padding, then convolve. Transposed Convolution Output Size: $L_{\text{out}} = (L_{\text{in}} - 1) \cdot \text{Stride} - 2 \cdot \text{Pad} + \text{Dilation} \cdot (\text{Kernel} - 1) + \text{OutPad} + 1$
+    \item \textbf{Strided Upconvolution or Transposed Conv} \textit{(learned!)}:  Insert $(s-1)$ zeros between pixels, $(k-p-1)$ padding, then convolve. Transposed Convolution Output Size: $L_{\text{out}} = (L_{\text{in}} - 1) \cdot \text{Stride} - 2 \cdot \text{Pad} + \text{Dilation} \cdot (\text{Kernel} - 1) + \text{OutPad} + 1$
 \end{itemize}
 
 \emph{U-Net:} Skip connections between corresponding down/upsampling layers; Combines global context (from skip connections) with local information (from previous layer); Essential for preserving fine-grained spatial information.

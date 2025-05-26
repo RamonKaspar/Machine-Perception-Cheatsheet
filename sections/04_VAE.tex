@@ -36,13 +36,14 @@ $\log p_\theta(\mathbf{x}) \geq \text{ELBO}_{\theta,\phi}(\mathbf{x}) = \E[q_\ph
 \end{highlightbox*}
 
 \begin{itemize}
+    \small
     \item $\E[q_\phi]{\log p_\theta(\mathbf{x}|\mathbf{z})}$: \textbf{Reconstruction loss} (encourages clustering of similar samples in latent space)
-    \item $-\KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z}))$: \textbf{Latent regularization} (makes posterior close to prior, ensures continuity and interpolation)
+    \item $-\KL(q_\phi(\mathbf{z}|\mathbf{x}) \parallel p_\theta(\mathbf{z}))$: \textbf{Latent regularization} (posterior close to prior, ensures continuity and interpolation)
 \end{itemize}
 
-\textbf{Objective:} \highlight{$\theta^*,\phi^* = \argmax_{\theta,\phi} \sum_i \text{ELBO}(\mathbf{x}_i,\theta,\phi)$}
+\textbf{Objective:} \highlight{\small $\theta^*,\phi^* = \argmax_{\theta,\phi} \sum_i \text{ELBO}(\mathbf{x}_i,\theta,\phi)$}
 
-\textbf{Reparametrization Trick:} To backpropagate through sampling:
+\textbf{Reparam. Trick:} To backpropagate through sampling:
 $\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\sigma}^2) \Leftrightarrow \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}), \mathbf{z} = \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon}$
 
 \textbf{Generation:} Sample $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$, decode to get $\hat{\mathbf{x}}$\\
@@ -72,7 +73,7 @@ Where $\beta > 1$ enforces stronger constraint on latent space than standard VAE
 % $\mathcal{L}_{\theta,\phi}(\mathbf{x}) = \E[q_\phi]{\log p_\theta(\mathbf{x}|\mathbf{z}_1)} - \KL(q_\phi(\mathbf{z}_L|\mathbf{x}) \parallel p_\theta(\mathbf{z}_L)) - \sum_{i=1}^{L-1} \E[\mathbf{z}_{i+1} \sim q_\phi]{\KL(q_\phi(\mathbf{z}_i|\mathbf{x}) \parallel p_\theta(\mathbf{z}_i|\mathbf{z}_{i+1}))}$
 
 \subsection{Gaussian Integrals \& KL Divergences}
-
+{\small
 For $p = \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma})$ and $q = \mathcal{N}(\mathbf{m}, \mathbf{L})$:
 
 \textbf{Entropy:} $H(p) = \frac{1}{2}[D(\ln 2\pi + 1) + \ln|\boldsymbol{\Sigma}|]$
@@ -82,4 +83,4 @@ For $p = \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma})$ and $q = \mathcal{N
 \textbf{KL Divergence:} $\KL(p \parallel q) = \frac{1}{2}[\ln \frac{|\mathbf{L}|}{|\boldsymbol{\Sigma}|} + \text{tr}(\mathbf{L}^{-1}\boldsymbol{\Sigma}) - D + (\boldsymbol{\mu} - \mathbf{m})^T \mathbf{L}^{-1}(\boldsymbol{\mu} - \mathbf{m})]$
 
 \textbf{Diagonal Case:} If $\boldsymbol{\Sigma} = \text{diag}\{\sigma_i^2\}$, $\mathbf{L} = \text{diag}\{l_i^2\}$:
-$\KL(p \parallel q) = \frac{1}{2}\sum_{i=1}^D \left[\ln \frac{l_i^2}{\sigma_i^2} + \frac{\sigma_i^2}{l_i^2} - 1 + \frac{(\mu_i - m_i)^2}{l_i^2}\right]$
+$\KL(p \parallel q) = \frac{1}{2}\sum_{i=1}^D \left[\ln \frac{l_i^2}{\sigma_i^2} + \frac{\sigma_i^2}{l_i^2} - 1 + \frac{(\mu_i - m_i)^2}{l_i^2}\right]$}

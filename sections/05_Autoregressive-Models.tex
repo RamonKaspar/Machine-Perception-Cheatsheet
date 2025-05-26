@@ -2,13 +2,13 @@
 
 
 \textbf{Goal:} Tractable density estimation using chain rule factorization
-\highlight{$p(\mathbf{x}) = \prod_{i=1}^n p(x_i | \mathbf{x}_{<i})$}
+\highlight{\small $p(\mathbf{x}) = \prod_{i=1}^n p(x_i | \mathbf{x}_{<i})$}
 
 \textbf{Discriminative vs. Generative:} Discriminative: $P(Y | X)$; Generative: $P(X, Y)$ (possibly missing $Y$)
 
 \textbf{Seq. modeling:} From $x_i, \ldots, x_{i+k}$ predict $x_{i+k+1}$
 
-\textbf{Tabular approach:} Needs $2^{i-1}$ parameters for $p(x_i | \mathbf{x}_{<i})$ - not scalable
+\textbf{Tabular:} $2^{i-1}$ params for $p(x_i | \mathbf{x}_{<i})$ - not scalable
 
 \textbf{Fully Visible Sigmoid Belief Networks (\emph{FVSBN}):}
 { \footnotesize
@@ -20,11 +20,12 @@ $p_{\theta_i}(x_i | \mathbf{x}_{<i}) = \text{Bernoulli}(f_i(\mathbf{x}_{1:i-1}))
 $\mathbf{h}_i = \sigma(\mathbf{b} + \mathbf{W}_{:,1:i-1} \mathbf{x}_{1:i-1})$
 $\quad \hat{x}_i = \sigma(c_i + \mathbf{V}_{i,:} \mathbf{h}_i)$ }
 
+{\small
 \textbf{Efficiency trick:} $\mathbf{h}_i = \mathbf{h}_{i-1} + \mathbf{W}_i x_i$ (inc. comp.)
 
 \textbf{Training:} $\mathcal{L} = \sum_{t=1}^T \sum_{i=1}^D \log p(x_i^{(t)} | \mathbf{x}_{<i}^{(t)})$
 
-\textbf{Advantages:} (1) $\mathcal{O}(TD)$ complexity, (2) Second-order optimization OK, (3) Arbitrary ordering
+\textbf{Advantages:} (1) $\mathcal{O}(TD)$ complexity, (2) Second-order optimization OK, (3) Arbitrary ordering}
 
 % \textbf{Variants:} RNADE (real-valued with Gaussian mixtures), ConvNADE (convolutional), DeepNADE (order-agnostic)
 
@@ -71,7 +72,7 @@ $\quad $\textbf{Idea:} Constrain autoencoder to satisfy autoregressive property;
 
 \subsection{Self-Attention \& Transformers}
 
-\highlight{$\mathbf{Y} = \text{softmax}\left(\frac{\mathbf{X}\mathbf{W}_Q (\mathbf{X}\mathbf{W}_K)^T}{\sqrt{D}} + \mathbf{M}\right) \mathbf{X}\mathbf{W}_V$}
+\highlight{\small $\mathbf{Y} = \text{softmax}\left(\frac{\mathbf{X}\mathbf{W}_Q (\mathbf{X}\mathbf{W}_K)^T}{\sqrt{D}} + \mathbf{M}\right) \mathbf{X}\mathbf{W}_V$}
 
 \begin{itemize}
     \item Learnable weights: $W_K, W_V, W_Q \in \R^{D \times D}$
@@ -83,7 +84,7 @@ $\quad $\textbf{Idea:} Constrain autoencoder to satisfy autoregressive property;
 
 \textbf{Positional Encoding:} Inject position information with sinusoidal functions
 
-$\text{PE}_{i,t} = \begin{cases}
+$\text{PE}_{i,t} = \begin{cases} \small
 \sin(\omega_k t) & \text{if } i = 2k \\
 \cos(\omega_k t) & \text{if } i = 2k+1
 \end{cases}$
@@ -109,11 +110,6 @@ LLMs predict next token given seq. of input tokens
 
 \subsection{Vector-Quantized VAE (VQ-VAE)}
 
-\textbf{Problem:} Autoregressive models struggle with high-resolution images/video; 
-\textbf{Solution:} Convert images to discrete token sequences using learned codebook
-
-\textbf{Architecture:} $\mathbf{x} \xrightarrow{\text{enc}} \mathbf{z} \xrightarrow{\text{codebook}} \mathbf{z}_q \xrightarrow{\text{dec}} \hat{\mathbf{x}}$
-
-\textbf{Codebook:} Set of learned vectors for quantization
-
-\textbf{Application:} Run autoregressive model in quantized latent space (Tokens in latent space are semantically more meaningful than individual pixel values).
+\textbf{Problem:} Autoreg. models struggle with high-res. images/video; 
+\textbf{Solution:} Convert images to discrete token seq. using learned codebook (Set of learned vectors for quantization). {\scriptsize$\mathbf{x} \xrightarrow{\text{enc}} \mathbf{z} \xrightarrow{\text{codebook}} \mathbf{z}_q \xrightarrow{\text{dec}} \hat{\mathbf{x}}$} \\
+{\small Run model in quantized latent space (latent tokens are semantically more meaningful than pixel values).}

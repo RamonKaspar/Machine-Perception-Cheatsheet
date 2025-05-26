@@ -11,11 +11,11 @@ $\text{softmax}(\mathbf{o}_t)_k = \frac{e^{o_{t,k}}}{\sum_{j=1}^K e^{o_{t,j}}} =
 
 $\Rightarrow$ \textit{CE Loss:} $L_t = -\sum_k y_{t,k} \log \hat{y}_{t,k}$ (for one-hot $\mathbf{y}_t$)
 
-\textbf{Use Cases:} $1 \to 1$: POS tagging; $1 \to N$: Image captioning; $N \to 1$: Sentiment classification; $N \to N$: Machine translation
+\textbf{Use Cases:} {\small $1 \to 1$: POS tagging; $1 \to N$: Image captioning; $N \to 1$: Sent. classif.; $N \to N$: Machine trans.}
 
 
 \subsection{Backpropagation Through Time (BPTT)}
-
+{\small
 $\frac{\partial L}{\partial W} = \sum_t \frac{\partial L_t}{\partial \mathbf{W}} \quad$ 
 \highlight{$\frac{\partial L_t}{\partial \mathbf{W}} = \sum_{k=1}^t \frac{\partial L_t}{\partial \hat{\mathbf{y}}_t} \frac{\partial \hat{\mathbf{y}}_t}{\partial \mathbf{h}_t} \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} \frac{\partial^+ \mathbf{h}_k}{\partial \mathbf{W}}$}
 
@@ -26,7 +26,7 @@ $\frac{\partial \mathbf{h}_t}{\partial \mathbf{W}} = \frac{\partial^+ \mathbf{h}
 For Elman RNN: $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k+1}^t \text{diag}(1 - \mathbf{h}_i^2) \mathbf{W}_{hh}$
 
 \textbf{Recursive Formulation:}
-$\frac{\partial L}{\partial \mathbf{h}_t} = \frac{\partial L_t}{\partial \mathbf{h}_t} + \frac{\partial L}{\partial \mathbf{h}_{t+1}} \frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t}$
+$\frac{\partial L}{\partial \mathbf{h}_t} = \frac{\partial L_t}{\partial \mathbf{h}_t} + \frac{\partial L}{\partial \mathbf{h}_{t+1}} \frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t}$}
 
 \textbf{Key Gradients:} {\small $\frac{\partial L_t}{\partial \mathbf{o}_t} = \hat{\mathbf{y}}_t - \mathbf{y}_t$ (for CE loss); $\frac{\partial \mathbf{o}_t}{\partial \mathbf{h}_t} = \mathbf{V}$ (linear output layer); $\frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t} = \text{diag}(1 - \mathbf{h}_{t+1}^2) \mathbf{W}_{hh}$ (tanh)}
 
@@ -60,7 +60,7 @@ $\theta \leftarrow
 
 \subsection{Long Short-Term Memory (LSTM)}
 
-\textbf{Key Idea:} Constant error flow through cell state, protected by gates
+\textbf{Key Idea:} Constant error flow through cell state
 
 { \footnotesize
 \highlight{$\begin{pmatrix} \mathbf{i} \\ \mathbf{f} \\ \mathbf{o} \\ \mathbf{g} \end{pmatrix} = \begin{pmatrix} \sigma \\ \sigma \\ \sigma \\ \tanh \end{pmatrix} \mathbf{W} \begin{pmatrix} \mathbf{x}_t \\ \mathbf{h}_{t-1} \end{pmatrix}$}
