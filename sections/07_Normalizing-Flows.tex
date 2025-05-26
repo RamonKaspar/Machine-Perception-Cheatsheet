@@ -1,0 +1,102 @@
+\section{Normalizing Flows}
+
+\textbf{Problem:} VAEs lack tractable likelihood, autoregressive models have no latent space representation
+
+\textbf{$\Rightarrow$ Goal:} Combine benefits of both - tractable likelihood AND meaningful latent space
+
+\textbf{Change of Variables:} (probabilistic mass preserved)
+\highlight{
+\footnotesize
+$p_X(\mathbf{x}) = p_Z(f^{-1}(\mathbf{x})) \left|\det \frac{\partial f^{-1}(\mathbf{x})}{\partial \mathbf{x}}\right| = p_Z(\mathbf{z}) \left|\det \frac{\partial f(\mathbf{z})}{\partial \mathbf{z}}\right|^{-1}$}
+
+$\Rightarrow$ change of volume given by det. of Jacobian
+
+Consider directed, latent variable model over \textit{observed} variables $X$ and \textit{latent}
+variables $Z$. In normalizing flows: mapping between $Z$ and $X$ given by deterministic and invertible functions: \highlight{$f_\theta: \R^d \to \R^d, s.t., X=f_\theta(Z), Z = f_\theta^{-1}(X)$}
+
+\highlight{$p_{\mathbf{x}}(\mathbf{x}) = p_{\mathbf{z}}(f^{-1}(\mathbf{x})) \left| \det \left( \frac{\partial f(\mathbf{z})}{\partial \mathbf{z}} \right) \right|^{-1}$}
+
+\textbf{Requirements for $f$:} (1) \textit{Invertible}: $f^{-1}$ must exist and (2) be \textit{differentiable}, (3) \textit{Dimension-preserving:} $\dim(\mathbf{z}) = \dim(\mathbf{x})$, i.e., bijective mapping (and (4) $\det \frac{\partial f}{\partial \mathbf{z}}$ efficiently computable in $\mathcal{O}(d)$ not $\mathcal{O}(d^3)$, Trick: Design $f$ with triangular Jacobian $\Rightarrow$ determinant = product of diagonal elements)
+
+{\small
+\textbf{Useful Identities:} $\log |\det(\mathbf{A}^{-1})| = -\log |\det(\mathbf{A})|$ \\ $\det(\mathbf{I} + \mathbf{u}h'\mathbf{w}^T) = 1 + h'\mathbf{u}^T\mathbf{w}$ $\quad \quad \mathbf{x} \odot \mathbf{y} = \text{diag}(\mathbf{x})\mathbf{y}$}
+
+\subsection{Coupling Layers}
+
+\highlight{$f: \begin{bmatrix} \mathbf{x}_A \\ \mathbf{x}_B \end{bmatrix} \mapsto \begin{bmatrix} h(\mathbf{x}_A, \beta(\mathbf{x}_B)) \\ \mathbf{x}_B \end{bmatrix}$}
+
+\textbf{Inverse:} $f^{-1}: \begin{bmatrix} \mathbf{y}_A \\ \mathbf{y}_B \end{bmatrix} \mapsto \begin{bmatrix} h^{-1}(\mathbf{y}_A, \beta(\mathbf{y}_B)) \\ \mathbf{y}_B \end{bmatrix}$
+
+\textbf{Jacobian:} {\footnotesize $\frac{\partial f(\mathbf{x})}{\partial \mathbf{x}} = \begin{bmatrix} h'(\mathbf{x}_A, \beta(\mathbf{x}_B)) & h'(\mathbf{x}_A, \beta(\mathbf{x}_B)) \beta'(\mathbf{x}_B) \\ \mathbf{0} & \mathbf{I} \end{bmatrix}$}
+
+Where $\beta$ can be any neural network (not invertible) and $h$ is element-wise invertible
+
+\emph{Flow of Transformations:}
+
+$\mathbf{x} = f(\mathbf{z}) = (f_K \circ f_{K-1} \circ \cdots \circ f_1)(\mathbf{z})$
+
+$p_X(\mathbf{x}) = p_Z(f^{-1}(\mathbf{x})) \prod_{k=1}^K \left|\det \frac{\partial f_k^{-1}(\mathbf{x})}{\partial \mathbf{x}}\right|$
+
+\textbf{Training Objective} (max. \textit{exact} log likelihood):
+\begin{highlightbox*}[gray!30]
+\footnotesize
+$$\log p_X(\mathcal{D}) = \sum_{\mathbf{x} \in \mathcal{D}} \left[\log p_Z(f^{-1}(\mathbf{x})) + \sum_{k=1}^K \log \left|\det \frac{\partial f_k^{-1}(\mathbf{x})}{\partial \mathbf{x}}\right|\right]$$
+\end{highlightbox*}
+
+\begin{itemize}
+  \item Sample $\mathbf{x}$: draw $\mathbf{z} \sim p_{\mathbf{z}}$, apply transform: $\mathbf{x} = f(\mathbf{z})$.
+  \item Compute likelihood of $\mathbf{x}$: $\mathbf{z} = f^{-1}(\mathbf{x})$, eval. $p_{\mathbf{z}}(\mathbf{z})$.
+\end{itemize}
+
+% \subsection{Specific Flow Types}
+
+% \textbf{Planar Flow:} $f(\mathbf{z}) = \mathbf{z} + \mathbf{u}h(\mathbf{w}^T\mathbf{z} + b)$
+% $|\det \frac{\partial f}{\partial \mathbf{z}}| = |1 + h'\mathbf{u}^T\mathbf{w}|$
+
+% \textbf{Radial Flow:} $f(\mathbf{z}) = \mathbf{z} + \beta h(\alpha, r)(\mathbf{z} - \mathbf{z}_0)$ where $r = |\mathbf{z} - \mathbf{z}_0|$
+
+\emph{NICE} (additive):
+$\begin{bmatrix} \mathbf{y}_A \\ \mathbf{y}_B \end{bmatrix} = \begin{bmatrix} \mathbf{x}_A + \beta(\mathbf{x}_B) \\ \mathbf{x}_B \end{bmatrix}$
+
+\emph{RealNVP:}
+$\begin{bmatrix} \mathbf{y}_A \\ \mathbf{y}_B \end{bmatrix} = \begin{bmatrix} \mathbf{x}_A \odot \exp(\mathbf{s}(\mathbf{x}_B)) + \mathbf{t}(\mathbf{x}_B) \\ \mathbf{x}_B \end{bmatrix}$
+
+\emph{GLOW:} \textbf{Flow Blocks for Computer Vision}
+
+$L$ Levels and $K$ steps per level (\textit{depth}). The \textit{squeeze} operation reduces spatial
+dimensions. For comp. eff., only half of the
+features are passed on (\textit{split}).
+
+\textbf{Flow Block Structure:} (1) ActNorm $\rightarrow$ (2) Invertible 1×1 Conv $\rightarrow$ (Conditional) Coupling Layer
+
+\textbf{1. Activation Normalization (\emph{ActNorm}):} Similar to batch norm. Forward: $\mathbf{y}_{i,j} = \mathbf{s} \odot \mathbf{x}_{i,j} + \mathbf{b}$; Inverse: $\mathbf{x}_{i,j} = (\mathbf{y}_{i,j} - \mathbf{b}) / \mathbf{s}$; Log-det: $H \cdot W \cdot \sum_i \log |\mathbf{s}_i|$
+
+\textbf{2. Invertible 1×1 Convolution:} Generalization f a permutation in the channel dimension. Forward: $\mathbf{y}_{i,j} = \mathbf{W}\mathbf{x}_{i,j}$; Inverse: $\mathbf{x}_{i,j} = \mathbf{W}^{-1}\mathbf{y}_{i,j}$; Log-det: $H \cdot W \cdot \log |\det \mathbf{W}|$ where $\mathbf{W} \in \R^{C \times C}, \det(W)=1$.
+
+\textbf{Efficient 1×1 Conv:} \highlight{$\mathbf{W} = \mathbf{P}\mathbf{L}(\mathbf{U} + \text{diag}(\mathbf{s}))$}. Where $\mathbf{P}$: fixed permutation; $\mathbf{L}$: lower triangular; $\mathbf{U}$: upper triangular. Log-det: $\sum_i \log |\mathbf{s}_i|$ (reduces $\mathcal{O}(C^3)$ to $\mathcal{O}(C)$)
+
+\textbf{3. Affine Coupling Layer:} Split: $\mathbf{x}_a, \mathbf{x}_b = \text{split}(\mathbf{x})$; Transform: $(\log \mathbf{s}, \mathbf{t}) = \text{NN}(\mathbf{x}_b)$, $\mathbf{s} = \exp(\log \mathbf{s})$; Forward: $\mathbf{y}_a = \mathbf{s} \odot \mathbf{x}_a + \mathbf{t}$, $\mathbf{y}_b = \mathbf{x}_b$; Inverse: $\mathbf{x}_a = (\mathbf{y}_a - \mathbf{t}) / \mathbf{s}$, $\mathbf{x}_b = \mathbf{y}_b$; Log-det: $\sum_i \log |\mathbf{s}_i|$
+
+\textbf{Squeeze Operation:} $C \times H \times W \to 4C \times H/2 \times W/2$ (redistribute spatial dimensions to channels)
+
+\subsection{Applications}
+
+\emph{SRFlow:} \textbf{(Super-Resolution)} Learn distribution of high-res variants conditioned on low-res image.
+\begin{itemize}
+    \item Forward: $\mathbf{h}^{n+1} = \exp(f_{\theta,s}^n(\mathbf{u})) \cdot \mathbf{h}^n + f_{\theta,b}^n(\mathbf{u})$
+    \item Inverse: $\mathbf{h}^n = \exp(-f_{\theta,s}^n(\mathbf{u})) \cdot (\mathbf{h}^{n+1} - f_{\theta,b}^n(\mathbf{u}))$
+    \item Log-det: $\sum_{i,j,k} f_{\theta,s}^n(\mathbf{u})_{i,j,k}$
+\end{itemize}
+
+\emph{StyleFlow:} Replace StyleGAN mapping network $z \to w$ (aux. latent space) with cond. norm. flow
+
+\emph{C-Flow:} \textbf{(Conditional Flow)} Two coupled flows for multimodal image-to-image translation. \textit{Flow A (Conditioning):} Standard affine coupling layer for images; \textit{Flow B (Conditioned):} Transformation parameters conditioned on Flow A.
+\textbf{Process:} (1) Encode original image: $\mathbf{z}_B^1 = f_\phi^{-1}(\mathbf{x}_B^1 | \mathbf{x}_A^1)$, (2) Encode extra modality: $\mathbf{z}_A^2 = g_\theta^{-1}(\mathbf{x}_A^2)$, (3) Generate new image: $\mathbf{x}_B^2 = f_\phi(\mathbf{z}_B^1 | \mathbf{z}_A^2)$
+
+\textbf{Applications:} Multimodal image translation, style transfer, 3D point cloud reconstruction from images
+
+\subsection{Advantages \& Limitations}
+
+\textbf{Pros:} (1) Exact likelihood computation, (2) Meaningful latent space, (3) Stable training
+
+\textbf{Cons:} (1) Expensive training, (2) Limited to equal dimensions, (3) Architecture constraints for efficient Jacobians, (4) Typically low resolution
