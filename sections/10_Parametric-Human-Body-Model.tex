@@ -63,7 +63,7 @@ Root rotation applied to origin of SMPL template (not root joint): $V' = \mathbf
 \begin{enumerate}
 \item Train $\{\mathcal{W}, \mathcal{J}, \mathcal{P}\}$ on pose dataset minimizing Euclidean
 surface reconstruction error + regularization ({\footnotesize $\mathcal{P} \approx 0$, $\mathcal{W}$ kept close, influence $\mathcal{J}$ only local})
-\item Train $\{\overline{\mathbf{T}}, \mathcal{S}\}$ on dataset with pose norm.: {\footnotesize$\hat{\mathbf{T}}^{S}_{j} = \arg\min_{\hat{\mathbf{T}}} \left\| W\left( \mathbf{T} + B_P(\vec{\theta}_j; \mathbf{P}), \mathcal{J}\hat{\mathbf{T}}, \vec{\theta}_j, \mathcal{W} \right) - \mathbf{V}^{S}_{j} \right\|^2$}. Then PCA on $\hat{\mathbf{T}}^{S}_{j}$.
+\item Train $\{\overline{\mathbf{T}}, \mathcal{S}\}$ on dataset with pose norm.: {\scriptsize$\hat{\mathbf{T}}^{S}_{j} = \arg\min_{\hat{\mathbf{T}}} \left\| W\left( \mathbf{T} + B_P(\vec{\theta}_j; \mathbf{P}), \mathcal{J}\hat{\mathbf{T}}, \vec{\theta}_j, \mathcal{W} \right) - \mathbf{V}^{S}_{j} \right\|^2$. Then PCA on $\hat{\mathbf{T}}^{S}_{j}$.}
 \end{enumerate}
 
 % \textbf{SMPL Family:} MANO/SMPL+H (hands), FLAME (faces), SMPL-X (full body + hands + face), STAR (improved LBS).
