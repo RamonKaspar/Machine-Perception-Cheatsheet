@@ -2,7 +2,7 @@
 
 \highlight{$\mathbf{h}_t = f(\mathbf{h}_{t-1}, \mathbf{x}_t; \mathbf{W})$, $\hat{\mathbf{y}}_t = \mathbf{W}_{hy} \mathbf{h}_t$}
 
-\textbf{Vanilla RNN:} \highlight{$\mathbf{h}_t = \tanh(\mathbf{W}_{hh} \mathbf{h}_{t-1} + \mathbf{W}_{xh} \mathbf{x}_t)$}
+\textbf{Vanilla RNN:} \highlight{\small $\mathbf{h}_t = \tanh(\mathbf{W}_{hh} \mathbf{h}_{t-1} + \mathbf{W}_{xh} \mathbf{x}_t + b)$}
 
 \textbf{Loss Function:} $L = \sum_t L_t = \sum_t L(\mathbf{y}_t, \hat{\mathbf{y}}_t)$
 
@@ -23,7 +23,7 @@ $\frac{\partial \mathbf{h}_t}{\partial \mathbf{W}} = \frac{\partial^+ \mathbf{h}
 
 \textbf{Chain Rule Term:} $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k+1}^t \frac{\partial \mathbf{h}_i}{\partial \mathbf{h}_{i-1}} = \prod_{i=k+1}^t \mathbf{W}_{hh}^T \text{diag}[f'(\mathbf{h}_{i-1})]$
 
-For Elman RNN: $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k+1}^t \text{diag}(1 - \mathbf{h}_i^2) \mathbf{W}_{hh}$
+For Elman RNN: $\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{i=k+1}^t \mathbf{W}_{hh} \text{diag}(1 - \mathbf{h}_i^2)$
 
 \textbf{Recursive Formulation:}
 $\frac{\partial L}{\partial \mathbf{h}_t} = \frac{\partial L_t}{\partial \mathbf{h}_t} + \frac{\partial L}{\partial \mathbf{h}_{t+1}} \frac{\partial \mathbf{h}_{t+1}}{\partial \mathbf{h}_t}$}
@@ -69,7 +69,7 @@ $\theta \leftarrow
 \highlight{$\mathbf{h}_t = \mathbf{o} \odot \tanh(\mathbf{c}_t)$}
 }
 
-Where $\mathbf{W} \in \R^{4n \times 2n}$ (concatenated weight matrix), $\mathbf{i}, \mathbf{f}, \mathbf{o} \in [0,1]$, gate $\mathbf{g} \in \R$
+Where $\mathbf{W} \in \R^{4n \times (d+n)}$ (concatenated weight matrix), $\mathbf{i}, \mathbf{f}, \mathbf{o} \in [0,1]$, gate $\mathbf{g} \in \R$
 
 
 \begin{itemize}

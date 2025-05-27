@@ -24,7 +24,7 @@ Any linear, shift-equivariant transform can be written as a convolution
 
 \emph{Convolution ($*$):} $K \in \R^{M \times N}$, $k=\text{floor}(M/2)$
 {\small
-\highlight{$\mathbf{I}'(i,j) = \sum_{m,n=-k}^k \sum_{n=-k}^k \mathbf{K}(\textcolor{red}{-}m,\textcolor{red}{-}n) \mathbf{I}(i+m, j+n)$}
+\highlight{$\mathbf{I}'(i,j) = \sum_{m=-k}^k \sum_{n=-k}^k \mathbf{K}(\textcolor{red}{-}m,\textcolor{red}{-}n) \mathbf{I}(i+m, j+n)$}
 }
 
 % \vspace{-1mm}
@@ -62,7 +62,7 @@ Convolution = Correlation iff $\mathbf{K}(i,j) = \mathbf{K}(-i,-j)$ (kernel is s
 \subsection{Pooling Operations}
 
 \emph{Max Pooling:} 
-Forward: $z^{(l)} = \max\{z^{(l-1)_i}$\\
+Forward: $z^{(l)} = \max\{z^{(l-1)}_i\}$\\
 Backward: $\frac{\partial z^{(l)}}{\partial z^{(l-1)}_i} = \1_{\{i = i^*\}}$ and
 $\delta^{(l-1)}=\{ \delta^{(l)}\}_{i^*}$ with {\small $i^* = \text{a max}_i\{ z^{(l-1)}_i \}$}
 

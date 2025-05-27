@@ -10,7 +10,7 @@ Min. KL $\iff$ max. MLE (for infinite sample size)
 
 \highlight{$H(p, q) = H(p) + \KL(p \parallel q)$}
 
-For empirical distribution $p = \sum_i \delta_{x_i}$: $H(p, q) = \text{NLL}(q) = -\KL(p \parallel q) + H(p)$
+For empirical distribution $p = \sum_i \delta_{x_i}$: $H(p, q) = \text{NLL}(q) = H(p) + \KL(p \parallel q)$
 
 \textbf{BCE:} {\small $L(\theta) = -\sum_i [y_i \log(\hat{y}_i) + (1-y_i) \log(1-\hat{y}_i)]$}
 
