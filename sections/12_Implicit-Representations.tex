@@ -1,0 +1,82 @@
+\section{Implicit Surfaces \& Neural Radiance Fields}
+
+\begin{itemize}
+    \item \textbf{Voxels:} $\mathcal{O}(n^3)$ memory cost, discret. artifacts
+    \item \textbf{Point clouds:} Doesn't model connect./topology
+    \item \textbf{Meshes:} Approx. err., limit. granular., self-intersec.
+\end{itemize}
+
+\textbf{Solution:} Implicit shape repr.: Represent surface as level-set of a continous function:
+\highlight{\footnotesize$S = \{\mathbf{x} : f(\mathbf{x}) = 0\}$}
+
+\textbf{Advantages:} Non-rigid transf., continuous normals, infinite precision, learnable, continous, arb. topology, memory efficient (simply the weights of network $f_\theta$)
+
+\textbf{Disadvantages:} Expensive intersection computation, requires root-finding, ill-defined UV space
+
+\subsection{Neural Implicit Representations (NIR)}
+
+Both cond. on input $\mathcal{X}$ (2D image, class labels, etc.)
+
+\emph{Occupancy Networks:} $f_\theta: \R^3 \times \mathcal{X} \to [0,1]$ (probability of being inside mesh). $f_\theta$ a MLP.
+
+\emph{DeepSDF:} $f_\theta: \R^3 \times \mathcal{X} \to \R$ (signed dist. to surface)
+
+\textbf{Normals:} Gradient of implicit function.
+
+\subsection{Training NIR}
+
+\textbf{1. From Watertight Meshes:} Sample points inside/outside mesh. Occupancy: Binary cross-entropy loss. DeepSDF: Regression loss on distance to mesh.
+
+\textbf{2. From Point Clouds:} Use Eikonal regularization:
+\highlight{\small $\mathcal{L}(\theta) = \sum_{i=1}^n |f_\theta(\mathbf{x}_i)|^2 + \lambda \E[\mathbf{x}]{(\|\nabla_\mathbf{x} f_\theta(\mathbf{x})\| - 1)^2}$}
+
+\textit{Eikonal term rationale:} $\|\nabla f\| = 1$ (single answer to "how far away am I from the surface?").
+
+% \textbf{3. From Images:} Need Differentiable Volumetric Rendering (\emph{DVR}): Networks: $f_\theta(\mathbf{p}) \in [0,1]$ (occupancy), $\mathbf{t}_\theta(\mathbf{p}) \in \R^3$ (color)
+% - \textbf{Forward:} For each pixel, cast ray, find intersection $\hat{\mathbf{p}}$ using secant method
+% - \textbf{Loss:} $\mathcal{L}(\hat{\mathbf{I}}, \mathbf{I}) = \sum_\mathbf{u} \|\hat{\mathbf{I}}_\mathbf{u} - \mathbf{I}_\mathbf{u}\|$
+% - \textbf{Backward:} Use implicit differentiation on $f_\theta(\hat{\mathbf{p}}) = \tau$
+
+\textbf{3. From Images:} Need Differentiable Volumetric Rendering (\emph{DVR}): Networks: {\footnotesize$f_\theta(\mathbf{p}) \in [0,1]$} (occupancy), {\footnotesize$\mathbf{t}_\theta(\mathbf{p}) \in \R^3$} (color). \textbf{Forward:} For each pixel {\footnotesize$\mathbf{u}$}, cast ray {\footnotesize$\hat{\mathbf{p}} = \mathbf{r}_0 + \hat{d}\mathbf{w}$}, then \textbf{Secant method:} Find smallest $j$ s.t. {\footnotesize$f_\theta(x_{j+1}) \geq \tau > f_\theta(x_j)$}, then: {\footnotesize$x_2 = x_1 - f(x_1) \frac{x_1 - x_0}{f(x_1) - f(x_0)}$} (iter. find surface  intersec.). \textbf{Loss:} {\footnotesize$\mathcal{L}(\hat{\mathbf{I}}, \mathbf{I}) = \sum_\mathbf{u} \|\hat{\mathbf{I}}_\mathbf{u} - \mathbf{I}_\mathbf{u}\|$}. \textbf{Backward:} From {\footnotesize$f_\theta(\hat{\mathbf{p}}) = \tau$}, implicit differentiation gives: {\footnotesize$\frac{\partial \hat{\mathbf{p}}}{\partial \theta} = -\mathbf{w} \left(\frac{\partial f_\theta(\hat{\mathbf{p}})}{\partial \hat{\mathbf{p}}} \cdot \mathbf{w}\right)^{-1} \frac{\partial f_\theta(\hat{\mathbf{p}})}{\partial \theta}$}
+
+\subsection{Neural Radiance Fields (\emph{NeRF})}
+Implicit surfaces struggle with transp., thin struct. $\Rightarrow$ \textbf{Network:} \highlight{\small$F_\theta(x, y, z, \theta, \phi) \to (r, g, b, \sigma)$}, where $(\theta, \phi)$: viewing direction, $\sigma$: density.
+
+\textbf{Constraint:} View direction applied late, limiting view effects and encouraging fine geometry. Density $\sigma$ independent of viewing direction.
+
+\textbf{Forwad:} Shoot ray, sample points along it \& blend (Alpha Compositing):
+{\footnotesize$\alpha_i = 1 - \exp(-\sigma_i \delta_i)$, $\delta_i = t_{i+1} - t_i$, 
+$T_i = \prod_{j=1}^{i-1}(1 - \alpha_j)$ (prob. light reaches point $i$)
+\highlight{$\mathbf{c} = \sum_{i=1}^N T_i \alpha_i \mathbf{c}_i$}} (Hierarchical Samp. for better effic.).
+
+\textbf{Training:} $\min_\theta \sum_i \|\text{render}_i(F_\theta) - \mathbf{I}_i\|^2$
+
+\textbf{Key difference from DVR:} Sample multiple points along ray, not just surface intersection
+
+\emph{Positional Encoding:}
+\textit{Problem:} NNs biased toward low-frequency functions, but need high-frequency details.
+\textit{Solution:} Replace $(x,y,z)$ coordinates with positional encoding or rand. Fourier features.
+
+\textbf{Caveat:} Slow render. due to many ray samples (50+)
+
+\subsection{3D Gaussian Splatting}
+
+\textbf{Idea:} Model scene as collection of 3D Gaussians.
+
+\textbf{Process:}
+1. Initialize with point cloud
+2. Project 3D Gaussians to 2D image plane (\flqq splatting \frqq)
+3. Differentiable rendering with depth sorting
+4. Adaptive density control: move/clone/merge Gaussians
+
+\textbf{(1) 2D Gauss. Proj.:}
+{\tiny
+$\alpha_i(\mathbf{u}) = o_i \cdot \exp\left(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu}_i')^T (\boldsymbol{\Sigma}_i')^{-1} (\mathbf{x} - \boldsymbol{\mu}_i')\right)$}
+
+
+\textbf{3D Gaussian parameterization:} {\small$\boldsymbol{\Sigma} = \mathbf{R}\mathbf{S}\mathbf{S}^T\mathbf{R}^T$.
+$\mathbf{R}$: rotation, $\mathbf{S}$: scaling, $o_i$: opacity}
+
+\textbf{Rendering:} Same as NeRF volume rendering
+
+\textbf{Advantages:} Fast rendering, real-time capable, good quality, no neural networks required
