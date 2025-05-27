@@ -1,0 +1,91 @@
+
+\section{Parametric Human Body Models}
+
+\textbf{Goal:} Equip AI with human-level perception and modeling to understand and mimic people.
+
+\subsection{2D Feature Learning Approaches}
+
+\textbf{Direct Regression (DeepPose):} CNN directly outputs $(x,y)$ coord. for body parts with refinement
+
+\textbf{Heatmaps:} CNN outputs separate binary heatmap for each keypoint. Keypoint positive (often Gaussian-blurred), elsewhere negative
+
+\textbf{Convolutional Pose Machine:} Iteratively generate more accurate heatmaps using original image.
+
+\textbf{OpenPose} (Real-Time Multi-Person 2D Keypoint Est.): \textit{bottom-up} approach similar to Conv. Pose Machines. Introduces Part Affinity Fields (PAFs): for each limb pixel $p$, define unit vector $v$ along the limb direction. Helps associating keypoints into full skeletons and assigning them to individuals.
+
+
+\subsection{Statistical Shape Models {\scriptsize{(Basel Face Model)}}}
+
+\textbf{Core Idea:} Represent any shape as linear combination of basis shapes:  $S = \sum_{i=1}^m a_i S_i$.
+\quad \textbf{Requirements:}
+\begin{enumerate}
+\item \textbf{Dense Correspondences:} Register template mesh to all input scans (difficult chicken-egg problem)
+\item \textbf{Sensible Coefficients:} Use PCA to ensure meaningful parameter space
+\end{enumerate}
+
+\textbf{(1) Dense Corr. Challenge:} Chicken-and-egg problem: need morphable model to help registration, but need registration to build morphable model. \textbf{Bootstrapping Sol:} Start with simple algo (ICP) for easy samples $\to$ build initial model $\mathcal{M}_0$ $\to$ fit to diff. examples $\to$ update model $\mathcal{M}_1$ $\to$ repeat.
+
+\textbf{(2) PCA for Shape Space:} Compute average shape $\bar{S}$, center data $x_i = S_i - \bar{S}$, compute covariance {\footnotesize $C = \frac{1}{n}XX^T$}, find eigenvectors $U$ via SVD ({\footnotesize $C=\frac{1}{m}U\diag(\sigma_i^2)U^T$}). Model: \highlight{\small $S = \bar{S} + \sum_{i=1}^m c_i\sigma_i\mathbf{u}_i$}
+
+\subsection{SMPL: {\small Skinned Multi-Person Linear Model}}
+
+SMPL uses a 3D mesh (vertices and faces, N = 6,890).
+
+\begin{highlightbox*}[gray!30]
+$M(\boldsymbol{\beta}, \boldsymbol{\theta}) = W(T_P(\boldsymbol{\beta}, \boldsymbol{\theta}), J(\boldsymbol{\beta}), \boldsymbol{\theta}, \mathcal{W})$
+
+$T_P(\boldsymbol{\beta}, \boldsymbol{\theta}) = \overline{\mathbf{T}} + B_S(\boldsymbol{\beta}) + B_P(\boldsymbol{\theta})$
+\end{highlightbox*}
+
+{\footnotesize
+$\boldsymbol{\beta} \in \R^{10}$: Shape params; $\boldsymbol{\theta} \in \R^{3K+3}$: Pose params ($K=23$ joints + global orientation); $W$: Linear Blend Skinning func; $T_P$: Template with shape and pose correctives; $\mathcal{W} \in \R^{K'\times3N}, K' \ll K$: Skinning weights; $\overline{\mathbf{T}} \in \R^{3N}$: Rest pose (T-pose) 
+}
+
+\textbf{Shape Blend Shapes:} $B_S(\boldsymbol{\beta}) = \sum_{n=1}^{|\boldsymbol{\beta}|} \beta_n \mathbf{S}_n$, Per vertex linear offset (learned via PCA on dataset)
+
+\textbf{Joint Locations:} $J(\boldsymbol{\beta}) = \mathcal{J}(\overline{\mathbf{T}} + B_S(\boldsymbol{\beta}))$ where $\mathcal{J}$ is learned regression matrix from meshes in T-pose.
+
+\textbf{Pose Representation:} Angle-axis formulation: rotate by angle $\phi$ around norm. axis $\omega$, so $\|\mathbf{a}\| = \phi$ where $\mathbf{a} = \phi \omega$. Rotations are relative (\textit{Kin. chain)}: {\small$\mathbf{R}_k^{\text{global}} = \mathbf{R}_k^{\text{local}} \cdot \mathbf{R}_{A(k)}^{\text{global}}$} where $A(k)$ parent of joint $k$.
+
+\textbf{Linear Blend Skinning (LBS):} Posed vertices $t_i'$ are lin. comb. of transformed template vertices $t_i$:
+\highlight{\small $\mathbf{t}_i' = \sum_{k=1}^K w_{k,i} G_k'(\boldsymbol{\theta}, J(\boldsymbol{\beta}))(\mathbf{t}_i + \mathbf{b}_{S,i}(\boldsymbol{\beta}) + \mathbf{b}_{P,i}(\boldsymbol{\theta}))$}
+
+\textbf{LBS Artifacts:} Candy-wrapper effect, collapsing joints $\Rightarrow$ Pose correctives $B_P(\boldsymbol{\theta})$ learned from data.
+
+\textbf{Pose Blend Shapes:} $B_P(\boldsymbol{\theta}) = \sum_{n=1}^{9K}(R_n(\boldsymbol{\theta}) - R_n(\boldsymbol{\theta}^*)) \mathbf{P}_n$ where $\boldsymbol{\theta}^*$ is rest pose
+
+Root rotation applied to origin of SMPL template (not root joint): $V' = \mathbf{R}_0(T_P(\boldsymbol{\beta}, \boldsymbol{\theta})- \mathbf{j}_0)+ \mathbf{j}_0 + \mathbf{t}$
+
+
+\textbf{Parameters:} $\boldsymbol{\beta}, \boldsymbol{\theta}$ and $\Phi = \{\overline{\mathbf{T}}, \mathcal{W}, \mathcal{S}, \mathcal{J}, \mathcal{P}\}$
+
+\emph{Training Process:} (first registration)
+\begin{enumerate}
+\item Train $\{\mathcal{W}, \mathcal{J}, \mathcal{P}\}$ on pose dataset minimizing Euclidean
+surface reconstruction error + regularization ({\footnotesize $\mathcal{P} \approx 0$, $\mathcal{W}$ kept close, influence $\mathcal{J}$ only local})
+\item Train $\{\overline{\mathbf{T}}, \mathcal{S}\}$ on dataset with pose norm.: {\footnotesize$\hat{\mathbf{T}}^{S}_{j} = \arg\min_{\hat{\mathbf{T}}} \left\| W\left( \mathbf{T} + B_P(\vec{\theta}_j; \mathbf{P}), \mathcal{J}\hat{\mathbf{T}}, \vec{\theta}_j, \mathcal{W} \right) - \mathbf{V}^{S}_{j} \right\|^2$}. Then PCA on $\hat{\mathbf{T}}^{S}_{j}$.
+\end{enumerate}
+
+% \textbf{SMPL Family:} MANO/SMPL+H (hands), FLAME (faces), SMPL-X (full body + hands + face), STAR (improved LBS).
+
+\subsection{SMPL Applications}
+
+\textbf{Human Mesh Recovery (HMR):} Direct regression from image to SMPL parameters $(\boldsymbol{\beta}, \boldsymbol{\theta})$ using CNN + discriminator for realism.
+
+\emph{SMPLify:} Opt. based fitting:
+{\footnotesize$\boldsymbol{\theta}^* = \arg\min_{\boldsymbol{\theta}} \|J_{\text{projected}} - J_{\text{2D}}\|^2 + L_{\text{prior}}$} (Prio learned from DB of SMPL poses).
+\textbf{Issues:} Hand-crafted optimization, sensitive to initialization, slow convergence. $\Rightarrow$ \textit{Learned Gradient Descent (\emph{LGD}):}
+{\footnotesize$\boldsymbol{\theta}^{t+1} = \boldsymbol{\theta}^t + F(\frac{\partial L_{\text{reproj}}}{\partial \boldsymbol{\theta}}, \boldsymbol{\theta}^t, x)$}
+where $F$ is neural network predicting parameter updates.
+
+\textbf{IMU Fitting:} Optimize SMPL pose to match orientation and acceleration from inertial sensors.
+
+\textbf{Electromag. Fit.:} Use EM measur. for pose/ shape est. with learned iter. fitting using RNN + LGD.
+
+\textbf{Clothing Modeling:} SMPL provides naked body $\to$ template reconstruction for clothed appearance.
+
+% \textbf{Animatable Neural Implicit Surfaces:} Replace discrete mesh with continuous implicit function $f(\mathbf{x}) = \tau$. Learn both canonical shape and skinning weights as neural networks for higher detail and flexibility.
+
+% \textbf{Benefits over SMPL:} Continuous surface representation; Higher resolution details; Learned skinning weights adapt to clothing/person; Can model non-rigid deformations better
+
+% \textbf{Applications:} Monocular RGB video avatars, hand-object reconstruction, clothed human performance capture.
